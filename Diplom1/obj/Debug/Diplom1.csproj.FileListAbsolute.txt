@@ -1,0 +1,6 @@
+c:\users\alex31\documents\visual studio 2015\Projects\Diplom1\Diplom1\bin\Debug\Diplom1.exe.config
+c:\users\alex31\documents\visual studio 2015\Projects\Diplom1\Diplom1\bin\Debug\Diplom1.exe
+c:\users\alex31\documents\visual studio 2015\Projects\Diplom1\Diplom1\bin\Debug\Diplom1.pdb
+c:\users\alex31\documents\visual studio 2015\Projects\Diplom1\Diplom1\obj\Debug\Diplom1.exe
+c:\users\alex31\documents\visual studio 2015\Projects\Diplom1\Diplom1\obj\Debug\Diplom1.pdb
+c:\users\alex31\documents\visual studio 2015\Projects\Diplom1\Diplom1\obj\Debug\Diplom1.csprojResolveAssemblyReference.cache
