@@ -1,19 +1,88 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Drawing;
+using NPlot;
 
 namespace Diplom1
 {
 	public class Program
 	{
+		static public void CreateLineGraph(int[] X, decimal[] Y, string name)
+		{
+			NPlot.Bitmap.PlotSurface2D npSurface = new NPlot.Bitmap.PlotSurface2D(700, 500);
+
+			NPlot.LinePlot npPlot1 = new LinePlot();
+
+			//Font definitions:
+			Font TitleFont = new Font("Arial", 12);
+			Font AxisFont = new Font("Arial", 10);
+			Font TickFont = new Font("Arial", 8);
+
+			//Legend definition:
+			NPlot.Legend npLegend = new NPlot.Legend();
+
+			//Prepare PlotSurface:
+			npSurface.Clear();
+			npSurface.Title = "Movement";
+			npSurface.BackColor = System.Drawing.Color.White;
+
+			//Left Y axis grid:
+			NPlot.Grid p = new Grid();
+			npSurface.Add(p, NPlot.PlotSurface2D.XAxisPosition.Bottom,
+						  NPlot.PlotSurface2D.YAxisPosition.Left);
+
+			//Weight:
+			npPlot1.AbscissaData = X;
+			npPlot1.DataSource = Y;
+			npPlot1.Label = name;
+			npPlot1.Color = System.Drawing.Color.Blue;
+
+			npSurface.Add(npPlot1, NPlot.PlotSurface2D.XAxisPosition.Bottom,
+						  NPlot.PlotSurface2D.YAxisPosition.Left);
+
+			//X axis
+			npSurface.XAxis1.Label = "Time";
+			npSurface.YAxis1.NumberFormat = "{0:####0}";
+			//npSurface.XAxis1.TicksLabelAngle = 90;
+			//npSurface.XAxis1.TickTextNextToAxis = true;
+			//npSurface.XAxis1.FlipTicksLabel = true;
+			//npSurface.XAxis1.LabelOffset = 110;
+			//npSurface.XAxis1.LabelOffsetAbsolute = true;
+			npSurface.XAxis1.LabelFont = AxisFont;
+			npSurface.XAxis1.TickTextFont = TickFont;
+
+			//Y axis
+			npSurface.YAxis1.Label = name;
+			npSurface.YAxis1.NumberFormat = "{0:####0.0}";
+			npSurface.YAxis1.LabelFont = AxisFont;
+			npSurface.YAxis1.TickTextFont = TickFont;
+
+			//Add legend:
+			npLegend.AttachTo(NPlot.PlotSurface2D.XAxisPosition.Top,
+					 NPlot.PlotSurface2D.YAxisPosition.Right);
+			npLegend.VerticalEdgePlacement = NPlot.Legend.Placement.Inside;
+			npLegend.HorizontalEdgePlacement = NPlot.Legend.Placement.Outside;
+			npLegend.BorderStyle = NPlot.LegendBase.BorderType.Line;
+			npSurface.Legend = npLegend;
+
+			//Update PlotSurface:
+			npSurface.Refresh();
+
+			npSurface.Bitmap.Save($"C:\\Users\\Alex31\\Desktop\\graph_{name}.png");
+		}
+
 		static void Main(string[] args)
 		{
+			Console.WriteLine(@"Укажите время работы алгоритма (мс):");
+			var ms = int.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
 			// dS --- расстояние между автомобилями; V - скорость
 			// Первые 7 параметров - особые точки для dS (в метрах).
 			// Оставшиеся 3 параметра - особые точки для V, используемые при вычислении среднего центра
 			// задаются в м/с.
 			var s = new Solution(-0.2m, -0.1m, -0.05m, 0m, 0.05m, 0.1m, 0.2m, 5.5m, 16.7m, 25m);
-			s.ToSolve();
+			s.ToSolve(ms);
+			Console.WriteLine("Вычисления выполнены. Графики построены. Нажмите ENTER...");
 			Console.ReadKey();
 		}
 	}
@@ -109,10 +178,14 @@ namespace Diplom1
 			return 0;
 		}
 
-		public void ToSolve()
+		public void ToSolve(int time)
 		{
+			List<int> Time = new List<int>();
+			List<decimal> Speed = new List<decimal>();
+			List<decimal> Distination = new List<decimal>();
+
 			decimal dist;
-			for (int i = 0; i < 200; ++i)
+			for (int i = 0; i < time; ++i)
 			{
 				dist = (_currentDistance - _perfectDistance)/_perfectDistance;
 				#region Fuzzification
@@ -120,7 +193,7 @@ namespace Diplom1
 				decimal A = _closeDistance(dist);
 				decimal B = _zeroDistance(dist);
 				decimal C = _farDistance(dist);
-				Console.WriteLine($"Близко:{A}; Средне: {B}; Далеко: {C}");
+				//Console.WriteLine($"Близко:{A}; Средне: {B}; Далеко: {C}");
 				#endregion
 				#region InferenceRule
 				// Правило вывода: прямое соответствие расстояние - скорость
@@ -140,8 +213,13 @@ namespace Diplom1
 				#endregion
 
 				_currentDistance = _currentDistance - _time * (_mySpeed - _entrySpeed);
-				Console.WriteLine($"Новая скорость: {Decimal.Round(_mySpeed * 3600 / 1000, 4)} (км/ч); Расстояние: {Decimal.Round(_currentDistance, 4)} (м)");
+				Time.Add(i);
+				Speed.Add(Decimal.Round(_mySpeed * 3600 / 1000, 4));
+				Distination.Add(Decimal.Round(_currentDistance, 4));
+				//Console.WriteLine($"Новая скорость: {Decimal.Round(_mySpeed * 3600 / 1000, 4)} (км/ч); Расстояние: {Decimal.Round(_currentDistance, 4)} (м)");
 			}
+			Program.CreateLineGraph(Time.ToArray(), Speed.ToArray(), "Speed");
+			Program.CreateLineGraph(Time.ToArray(), Distination.ToArray(), "Distination");
 		}
 	}
 }
