@@ -80,7 +80,9 @@ namespace Diplom1
 			// Первые 7 параметров - особые точки для dS (в метрах).
 			// Оставшиеся 3 параметра - особые точки для V, используемые при вычислении среднего центра
 			// задаются в м/с.
-			var s = new Solution(-0.2m, -0.1m, -0.05m, 0m, 0.05m, 0.1m, 0.2m, 5.5m, 16.7m, 25m);
+			var s = new Solution(-0.2m, -0.1m, -0.05m, 0m, 0.05m, 0.1m, 0.2m,
+								-0.2m, -0.1m, -0.05m, 0m, 0.05m, 0.1m, 0.2m,
+								-1.3m, -0.3m, 0m, 0.3m, 1.3m);
 			s.ToSolve(ms);
 			Console.WriteLine("Вычисления выполнены. Графики построены. Нажмите ENTER...");
 			Console.ReadKey();
@@ -97,10 +99,20 @@ namespace Diplom1
 		private readonly decimal _x5;
 		private readonly decimal _x6;
 		private readonly decimal _x7;
-		// Особые точки для V
+		// Особые точки для dV
+		private readonly decimal _z1;
+		private readonly decimal _z2;
+		private readonly decimal _z3;
+		private readonly decimal _z4;
+		private readonly decimal _z5;
+		private readonly decimal _z6;
+		private readonly decimal _z7;
+		// Особые точки для lambda
 		private readonly decimal _y1;
 		private readonly decimal _y2;
 		private readonly decimal _y3;
+		private readonly decimal _y4;
+		private readonly decimal _y5;
 
 		// Скорость в (м/с)
 		private decimal _mySpeed = 16.7m;
@@ -111,11 +123,12 @@ namespace Diplom1
 		// Текущая дистанция в (м)
 		private decimal _currentDistance = 300m;
 		// Частота вычислений: 1 (сек)
-		private decimal _time = 1m;
+		private decimal _teta = 1m;
 		private Dictionary<String, decimal> _rules = new Dictionary<string, decimal>();
 
 		public Solution(decimal x1, decimal x2, decimal x3, decimal x4, decimal x5, decimal x6, decimal x7,
-					decimal y1, decimal y2, decimal y3)
+						decimal z1, decimal z2, decimal z3, decimal z4, decimal z5, decimal z6, decimal z7,
+					decimal y1, decimal y2, decimal y3, decimal y4, decimal y5)
 		{
 			_x1 = x1;
 			_x2 = x2;
@@ -125,9 +138,19 @@ namespace Diplom1
 			_x6 = x6;
 			_x7 = x7;
 
+			_z1 = z1;
+			_z2 = z2;
+			_z3 = z3;
+			_z4 = z4;
+			_z5 = z5;
+			_z6 = z6;
+			_z7 = z7;
+
 			_y1 = y1;
 			_y2 = y2;
 			_y3 = y3;
+			_y4 = y4;
+			_y5 = y5;
 
 			Console.WriteLine("Введите скорость преследуемого автомобиля (в км/ч):");
 			_entrySpeed = Decimal.Parse(Console.ReadLine(), CultureInfo.InvariantCulture) * 1000 / 3600;
@@ -178,48 +201,115 @@ namespace Diplom1
 			return 0;
 		}
 
+		private decimal _lessSpeed(decimal z)
+		{
+			if (_z1 <= z && z <= _z3)
+			{
+				return (_z3 - z) / (_z3 - _z1);
+			}
+			if (z <= _z1)
+			{
+				return 1;
+			}
+			return 0;
+		}
+
+		private decimal _zeroSpeed(decimal z)
+		{
+			if (_z2 <= z && z <= _z4)
+			{
+				return (z - _z2) / (_z4 - _z2);
+			}
+			if (_z4 <= z && z <= _z6)
+			{
+				return (_z6 - z) / (_z6 - _z4);
+			}
+			return 0;
+		}
+
+		private decimal _moreSpeed(decimal z)
+		{
+			if (_z5 <= z && z <= _z7)
+			{
+				return (z - _z5) / (_z7 - _z5);
+			}
+			if (_z7 <= z)
+			{
+				return 1;
+			}
+			return 0;
+		}
+
 		public void ToSolve(int time)
 		{
 			List<int> Time = new List<int>();
 			List<decimal> Speed = new List<decimal>();
-			List<decimal> Distination = new List<decimal>();
+			List<decimal> Distance = new List<decimal>();
 
-			decimal dist;
+			decimal deltaDistance, deltaSpeed;
 			for (int i = 0; i < time; ++i)
 			{
-				dist = (_currentDistance - _perfectDistance)/_perfectDistance;
+				deltaDistance = (_currentDistance - _perfectDistance) / _perfectDistance;
+				deltaSpeed = (_mySpeed - _entrySpeed) / _entrySpeed;
 				#region Fuzzification
 				// Три области фазиффикации: близко (прямоуг трапеция), средне (треугольник), далеко (прямоуг. трапеция)
-				decimal A = _closeDistance(dist);
-				decimal B = _zeroDistance(dist);
-				decimal C = _farDistance(dist);
-				//Console.WriteLine($"Близко:{A}; Средне: {B}; Далеко: {C}");
+				decimal A = _closeDistance(deltaDistance);
+				decimal B = _zeroDistance(deltaDistance);
+				decimal C = _farDistance(deltaDistance);
+				decimal D = _lessSpeed(deltaSpeed);
+				decimal E = _zeroSpeed(deltaSpeed);
+				decimal F = _moreSpeed(deltaSpeed);
 				#endregion
 				#region InferenceRule
-				// Правило вывода: прямое соответствие расстояние - скорость
-				// dS	V
-				// -	-
-				// 0	0
-				// +	+
-				_rules["Close"] = A;
-				_rules["Zero"] = B;
-				_rules["Far"] = C;
+				// Правило вывода: прямое соответствие расстояние и скорость - коэффициент лямбда
+				// ++ - Сильно Увеличить
+				// -- - Сильно Снизить
+				// + - Немного Увеличить
+				// - - Немного Уменьшить
+				// 0 - Ничего не делать
+				// dS\dV	-	0	+
+				// -		0	-	--
+				// 0		+	0	-
+				// +		++	+	0
+				_rules["CloseDist"] = A;
+				_rules["ZeroDist"] = B;
+				_rules["FarDist"] = C;
+				_rules["LessSpeed"] = D;
+				_rules["ZeroSpeed"] = E;
+				_rules["MoreSpeed"] = F;
 				#endregion
 				#region Defuzzification
 				// Дефазиффикация осуществляется методом Среднего Центра
-				 _mySpeed = (_y1 * _rules["Close"]
-								 + _y2 * _rules["Zero"]
-								 + _y3 * _rules["Far"]) / (_rules["Close"] + _rules["Zero"] + _rules["Far"]);
+				 var lambda = (_y3 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+								+ _y2 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+								+ _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
+								 + _y4 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
+								 + _y3 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
+								 + _y2 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
+								 + _y5 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
+								 + _y4 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
+								 + _y3 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"])) 
+							/ (Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+								+ Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+								+ Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
+								+ Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
+								+ Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
+								+ Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
+								+ Math.Min(_rules["FarDist"], _rules["LessSpeed"])
+								+ Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
+								+ Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
 				#endregion
 
-				_currentDistance = _currentDistance - _time * (_mySpeed - _entrySpeed);
+				var a = lambda * Math.Abs(_mySpeed - _entrySpeed);
+				_mySpeed += _teta * a;
+				_currentDistance = _currentDistance - _teta * (_mySpeed - _entrySpeed);
 				Time.Add(i);
 				Speed.Add(Decimal.Round(_mySpeed * 3600 / 1000, 4));
-				Distination.Add(Decimal.Round(_currentDistance, 4));
+				Distance.Add(Decimal.Round(_currentDistance, 4));
 				//Console.WriteLine($"Новая скорость: {Decimal.Round(_mySpeed * 3600 / 1000, 4)} (км/ч); Расстояние: {Decimal.Round(_currentDistance, 4)} (м)");
 			}
 			Program.CreateLineGraph(Time.ToArray(), Speed.ToArray(), "Speed");
-			Program.CreateLineGraph(Time.ToArray(), Distination.ToArray(), "Distination");
+			Program.CreateLineGraph(Time.ToArray(), Distance.ToArray(), "Distination");
 		}
 	}
 }
