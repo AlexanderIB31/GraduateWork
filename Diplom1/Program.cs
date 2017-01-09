@@ -63,7 +63,7 @@ namespace Diplom1
 			//Update PlotSurface:
 			npSurface.Refresh();
 
-			npSurface.Bitmap.Save($"C:\\Users\\Alex31\\Desktop\\graph_{name}.png");
+			npSurface.Bitmap.Save($"graph_{name}.png");
 		}
 
 		static void Main(string[] args)
