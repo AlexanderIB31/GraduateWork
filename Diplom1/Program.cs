@@ -32,7 +32,6 @@ namespace Diplom1
 			npSurface.Add(p, NPlot.PlotSurface2D.XAxisPosition.Bottom,
 						  NPlot.PlotSurface2D.YAxisPosition.Left);
 
-			//Weight:
 			npPlot1.AbscissaData = X;
 			npPlot1.DataSource = Y;
 			npPlot1.Label = name;
@@ -44,11 +43,6 @@ namespace Diplom1
 			//X axis
 			npSurface.XAxis1.Label = "Time";
 			npSurface.YAxis1.NumberFormat = "{0:####0}";
-			//npSurface.XAxis1.TicksLabelAngle = 90;
-			//npSurface.XAxis1.TickTextNextToAxis = true;
-			//npSurface.XAxis1.FlipTicksLabel = true;
-			//npSurface.XAxis1.LabelOffset = 110;
-			//npSurface.XAxis1.LabelOffsetAbsolute = true;
 			npSurface.XAxis1.LabelFont = AxisFont;
 			npSurface.XAxis1.TickTextFont = TickFont;
 
@@ -76,13 +70,15 @@ namespace Diplom1
 		{
 			Console.WriteLine(@"Укажите время работы алгоритма (мс):");
 			var ms = int.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-			// dS --- расстояние между автомобилями; V - скорость
-			// Первые 7 параметров - особые точки для dS (в метрах).
-			// Оставшиеся 3 параметра - особые точки для V, используемые при вычислении среднего центра
-			// задаются в м/с.
+			// dS --- расстояние между автомобилями; 
+			// dV --- разница скоростей;
+			// Первые 7 параметров - особые точки для dS (в метрах);
+			// Вторые 7 параметров - особые точки для dV (в м/c);
+			// Оставшиеся 5 параметров - особые точки для L (лямбда, коэф. домножения модуля разности скоростей), 
+			// используемые при вычислении среднего центра
 			var s = new Solution(-0.2m, -0.1m, -0.05m, 0m, 0.05m, 0.1m, 0.2m,
 								-0.2m, -0.1m, -0.05m, 0m, 0.05m, 0.1m, 0.2m,
-								-1.3m, -0.3m, 0m, 0.3m, 1.3m);
+								-1.8m, -1.2m, 0m, 1.2m, 1.8m);
 			s.ToSolve(ms);
 			Console.WriteLine("Вычисления выполнены. Графики построены. Нажмите ENTER...");
 			Console.ReadKey();
@@ -245,12 +241,14 @@ namespace Diplom1
 			List<int> Time = new List<int>();
 			List<decimal> Speed = new List<decimal>();
 			List<decimal> Distance = new List<decimal>();
+			List<decimal> Acceleration = new List<decimal>();
 
 			decimal deltaDistance, deltaSpeed;
 			for (int i = 0; i < time; ++i)
 			{
 				deltaDistance = (_currentDistance - _perfectDistance) / _perfectDistance;
 				deltaSpeed = (_mySpeed - _entrySpeed) / _entrySpeed;
+				// Дефазификация осуществляется по методу Мамдани
 				#region Fuzzification
 				// Три области фазиффикации: близко (прямоуг трапеция), средне (треугольник), далеко (прямоуг. трапеция)
 				decimal A = _closeDistance(deltaDistance);
@@ -300,16 +298,17 @@ namespace Diplom1
 								+ Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
 				#endregion
 
-				var a = lambda * Math.Abs(_mySpeed - _entrySpeed);
+				var a = lambda * Math.Min(3m, Math.Abs(_mySpeed - _entrySpeed));
 				_mySpeed += _teta * a;
 				_currentDistance = _currentDistance - _teta * (_mySpeed - _entrySpeed);
 				Time.Add(i);
 				Speed.Add(Decimal.Round(_mySpeed * 3600 / 1000, 4));
 				Distance.Add(Decimal.Round(_currentDistance, 4));
-				//Console.WriteLine($"Новая скорость: {Decimal.Round(_mySpeed * 3600 / 1000, 4)} (км/ч); Расстояние: {Decimal.Round(_currentDistance, 4)} (м)");
+				Acceleration.Add(Decimal.Round(a, 4));
 			}
 			Program.CreateLineGraph(Time.ToArray(), Speed.ToArray(), "Speed");
 			Program.CreateLineGraph(Time.ToArray(), Distance.ToArray(), "Distination");
+			Program.CreateLineGraph(Time.ToArray(), Acceleration.ToArray(), "Acceleration");
 		}
 	}
 }
