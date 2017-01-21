@@ -8,7 +8,7 @@ namespace Diplom1
 {
 	public class Program
 	{
-		static public void CreateLineGraph(int[] X, decimal[] Y, string name)
+		static public void CreateLineGraph(int[] X, decimal[] Y1, decimal[] Y2, string name)
 		{
 			NPlot.Bitmap.PlotSurface2D npSurface = new NPlot.Bitmap.PlotSurface2D(700, 500);
 
@@ -33,12 +33,23 @@ namespace Diplom1
 						  NPlot.PlotSurface2D.YAxisPosition.Left);
 
 			npPlot1.AbscissaData = X;
-			npPlot1.DataSource = Y;
+			npPlot1.DataSource = Y1;
 			npPlot1.Label = name;
 			npPlot1.Color = System.Drawing.Color.Blue;
 
 			npSurface.Add(npPlot1, NPlot.PlotSurface2D.XAxisPosition.Bottom,
 						  NPlot.PlotSurface2D.YAxisPosition.Left);
+
+			if (Y2 != null)
+			{
+				NPlot.LinePlot npPlot2 = new LinePlot();
+				npPlot2.AbscissaData = X;
+				npPlot2.DataSource = Y2;
+				npPlot2.Label = name + "_entry";
+				npPlot2.Color = System.Drawing.Color.Red;
+				npSurface.Add(npPlot2, NPlot.PlotSurface2D.XAxisPosition.Bottom,
+							  NPlot.PlotSurface2D.YAxisPosition.Left);
+			}
 
 			//X axis
 			npSurface.XAxis1.Label = "Time";
@@ -74,11 +85,10 @@ namespace Diplom1
 			// dV --- разница скоростей;
 			// Первые 7 параметров - особые точки для dS (в метрах);
 			// Вторые 7 параметров - особые точки для dV (в м/c);
-			// Оставшиеся 5 параметров - особые точки для L (лямбда, коэф. домножения модуля разности скоростей), 
-			// используемые при вычислении среднего центра
+			// Оставшиеся 5 параметров - особые точки для V*
 			var s = new Solution(-0.2m, -0.1m, -0.05m, 0m, 0.05m, 0.1m, 0.2m,
-								-0.2m, -0.1m, -0.05m, 0m, 0.05m, 0.1m, 0.2m,
-								-1.8m, -1.2m, 0m, 1.2m, 1.8m);
+								-0.3m, -0.2m, -0.1m, 0m, 0.1m, 0.2m, 0.3m,
+								2.77778m, 11.11111m, 16.66667m, 22.22222m, 33.33333m);
 			s.ToSolve(ms);
 			Console.WriteLine("Вычисления выполнены. Графики построены. Нажмите ENTER...");
 			Console.ReadKey();
@@ -103,7 +113,7 @@ namespace Diplom1
 		private readonly decimal _z5;
 		private readonly decimal _z6;
 		private readonly decimal _z7;
-		// Особые точки для lambda
+		// Особые точки для V*
 		private readonly decimal _y1;
 		private readonly decimal _y2;
 		private readonly decimal _y3;
@@ -112,7 +122,7 @@ namespace Diplom1
 
 		// Скорость в (м/с)
 		private decimal _mySpeed = 16.7m;
-		// Цель движется равномерно
+		// Цель движется неравномерно
 		private decimal _entrySpeed = 16.7m;
 		// Требуемая дистанция в (м)
 		private decimal _perfectDistance = 30m;
@@ -124,7 +134,7 @@ namespace Diplom1
 
 		public Solution(decimal x1, decimal x2, decimal x3, decimal x4, decimal x5, decimal x6, decimal x7,
 						decimal z1, decimal z2, decimal z3, decimal z4, decimal z5, decimal z6, decimal z7,
-					decimal y1, decimal y2, decimal y3, decimal y4, decimal y5)
+						decimal y1, decimal y2, decimal y3, decimal y4, decimal y5)
 		{
 			_x1 = x1;
 			_x2 = x2;
@@ -238,14 +248,20 @@ namespace Diplom1
 
 		public void ToSolve(int time)
 		{
+			decimal lambda = 0.98m;
+
+			Random r = new Random();
+
 			List<int> Time = new List<int>();
-			List<decimal> Speed = new List<decimal>();
+			List<decimal> ownSpeeds = new List<decimal>();
+			List<decimal> entrySpeeds = new List<decimal>();
 			List<decimal> Distance = new List<decimal>();
 			List<decimal> Acceleration = new List<decimal>();
 
 			decimal deltaDistance, deltaSpeed;
 			for (int i = 0; i < time; ++i)
 			{
+				entrySpeeds.Add(Decimal.Round(_entrySpeed * 3600 / 1000, 4));
 				deltaDistance = (_currentDistance - _perfectDistance) / _perfectDistance;
 				deltaSpeed = (_mySpeed - _entrySpeed) / _entrySpeed;
 				// Дефазификация осуществляется по методу Мамдани
@@ -278,7 +294,7 @@ namespace Diplom1
 				#endregion
 				#region Defuzzification
 				// Дефазиффикация осуществляется методом Среднего Центра
-				 var lambda = (_y3 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+				 var resSpeed = (_y3 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
 								+ _y2 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
 								+ _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
 								 + _y4 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
@@ -298,17 +314,19 @@ namespace Diplom1
 								+ Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
 				#endregion
 
-				var a = lambda * Math.Min(3m, Math.Abs(_mySpeed - _entrySpeed));
+				var a = lambda * (resSpeed - _mySpeed);
 				_mySpeed += _teta * a;
-				_currentDistance = _currentDistance - _teta * (_mySpeed - _entrySpeed);
+				_currentDistance -= _teta * (_mySpeed - _entrySpeed);
 				Time.Add(i);
-				Speed.Add(Decimal.Round(_mySpeed * 3600 / 1000, 4));
+				ownSpeeds.Add(Decimal.Round(_mySpeed * 3600 / 1000, 4));
 				Distance.Add(Decimal.Round(_currentDistance, 4));
 				Acceleration.Add(Decimal.Round(a, 4));
+				_entrySpeed += (decimal)(r.Next(-70, 70) * r.NextDouble());
+				_entrySpeed = Math.Min(40m, Math.Max(_entrySpeed, 5m));
 			}
-			Program.CreateLineGraph(Time.ToArray(), Speed.ToArray(), "Speed");
-			Program.CreateLineGraph(Time.ToArray(), Distance.ToArray(), "Distination");
-			Program.CreateLineGraph(Time.ToArray(), Acceleration.ToArray(), "Acceleration");
+			Program.CreateLineGraph(Time.ToArray(), ownSpeeds.ToArray(), entrySpeeds.ToArray(), "Speed");
+			Program.CreateLineGraph(Time.ToArray(), Distance.ToArray(), null, "Distination");
+			Program.CreateLineGraph(Time.ToArray(), Acceleration.ToArray(), null, "Acceleration");
 		}
 	}
 }
