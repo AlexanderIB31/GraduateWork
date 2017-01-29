@@ -1,18 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <ProjectGuid>{A928963E-11D2-6630-1334-92AD635F97E2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp-firstpass</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <BaseDirectory>Assets</BaseDirectory>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,6 +25,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0169</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +34,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0169</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,48 +49,48 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\AxisTouchButton.cs" />
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\ButtonHandler.cs" />
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\CrossPlatformInputManager.cs" />
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\InputAxisScrollbar.cs" />
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\Joystick.cs" />
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\MobileControlRig.cs" />
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\PlatformSpecific\MobileInput.cs" />
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\PlatformSpecific\StandaloneInput.cs" />
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\TiltInput.cs" />
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\TouchPad.cs" />
-     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\VirtualInput.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneAiControl.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneAudio.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneControlSurfaceAnimator.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneController.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplanePropellerAnimator.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneUserControl2Axis.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneUserControl4Axis.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\JetParticleEffect.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\LandingGear.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\BrakeLight.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarAIControl.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarAudio.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarController.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarSelfRighting.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarUserControl.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\Mudguard.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\SkidTrail.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\Suspension.cs" />
-     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\WheelEffects.cs" />
-     <None Include="Assets\Standard Assets\Vehicles\Car\Shaders\DiffuseReflectiveShader.shader" />
-     <None Include="Assets\Standard Assets\Vehicles\Aircraft\AircraftGuidelines.txt" />
-     <None Include="Assets\Standard Assets\Vehicles\Car\Shaders\ReflectiveDiffuseSpecTransp.shader" />
-     <None Include="Assets\Standard Assets\Vehicles\Car\Shaders\ReflectiveDiffuseSpec.shader" />
-     <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
-     <None Include="Assets\Standard Assets\Vehicles\Car\CarGuidelines.txt" />
- <Reference Include="UnityEngine.UI">
- <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
- </Reference>
- <Reference Include="UnityEngine.Networking">
- <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
- </Reference>
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\AxisTouchButton.cs" />
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\ButtonHandler.cs" />
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\CrossPlatformInputManager.cs" />
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\InputAxisScrollbar.cs" />
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\Joystick.cs" />
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\MobileControlRig.cs" />
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\PlatformSpecific\MobileInput.cs" />
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\PlatformSpecific\StandaloneInput.cs" />
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\TiltInput.cs" />
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\TouchPad.cs" />
+    <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\VirtualInput.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneAiControl.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneAudio.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneControlSurfaceAnimator.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneController.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplanePropellerAnimator.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneUserControl2Axis.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneUserControl4Axis.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\JetParticleEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\LandingGear.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\BrakeLight.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarAIControl.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarAudio.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarController.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarSelfRighting.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarUserControl.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\Mudguard.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\SkidTrail.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\Suspension.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\WheelEffects.cs" />
+    <None Include="Assets\Standard Assets\Vehicles\Car\Shaders\DiffuseReflectiveShader.shader" />
+    <None Include="Assets\Standard Assets\Vehicles\Aircraft\AircraftGuidelines.txt" />
+    <None Include="Assets\Standard Assets\Vehicles\Car\Shaders\ReflectiveDiffuseSpecTransp.shader" />
+    <None Include="Assets\Standard Assets\Vehicles\Car\Shaders\ReflectiveDiffuseSpec.shader" />
+    <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
+    <None Include="Assets\Standard Assets\Vehicles\Car\CarGuidelines.txt" />
+    <Reference Include="UnityEngine.UI">
+      <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Networking">
+      <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -96,5 +100,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  
 </Project>
