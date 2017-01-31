@@ -14,7 +14,7 @@ namespace Diplom1
 {
 	public class GA
 	{
-		static void Main(string[] args)
+		public static void Start()
 		{
 			var selection = new EliteSelection();
 			var crossover = new UniformCrossover();
@@ -31,12 +31,15 @@ namespace Diplom1
 
 			Console.WriteLine($"Best solution found has {ga.BestChromosome.Fitness} fitness.");
 			int cnt = 0;
-			foreach (var x in ga.BestChromosome.GetGenes())
+			using (var fw = new System.IO.StreamWriter("params.txt"))
 			{
-				if (cnt % 7 == 0)
-					Console.WriteLine();
-				cnt++;
-				Console.Write($"{x}| ");
+				foreach (var x in ga.BestChromosome.GetGenes())
+				{
+					if (cnt > 0 && cnt % 7 == 0)
+						fw.WriteLine();
+					cnt++;
+					fw.Write($"{x}  ");
+				}
 			}
 			Console.ReadKey();
 		}

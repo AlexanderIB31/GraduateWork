@@ -77,7 +77,7 @@ namespace Diplom1
 			npSurface.Bitmap.Save($"graph_{name}.png");
 		}
 
-		public static void Start()
+		public static void Main(string[] args)
 		{
 			Console.WriteLine(@"Укажите время работы алгоритма (мс):");
 			var ms = int.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
@@ -106,10 +106,10 @@ namespace Diplom1
 			// Первые 7 параметров - особые точки для dS (в метрах);
 			// Вторые 7 параметров - особые точки для dV (в м/c);
 			// Оставшиеся 5 параметров - особые точки для V*
-			var s = new Solution(-0.2, -0.1, -0.05, 0, 0.05, 0.1, 0.2,
-								-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3,
-								2.77778, 11.11111, 16.66667, 22.22222, 33.33333,
-								lambda, perfectDist, curDist, mySpeed, entrySpeed);
+			var s = new Solution(-6.86431407675348, -0.0767831365469765, -0.0140079527460076, 0,  0.0118658099518464, 0.0987010085669816,  3.4255271734323,
+								-3.34386826751002, -0.0744704210918725, -0.0133997615163213, 0, 0.0253053503182276, 0.0938345747039814, 3.92124659727386,
+								1.2050993395993, 7.61049976726552, 18.8201591582131, 32.2351514517493, 49.5516308641767, 0.702309126361417,
+								perfectDist, curDist, mySpeed, entrySpeed);
 			var res = s.ToSolve(ms);
 			CreateLineGraph(time.ToArray(), res.OwnSpeeds.ToArray(), res.EntrySpeeds.ToArray(), "Speed");
 			CreateLineGraph(time.ToArray(), res.Distances.ToArray(), null, "Distination");
