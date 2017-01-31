@@ -8,7 +8,7 @@ namespace Diplom1
 {
 	public class Program
 	{
-		static public void CreateLineGraph(int[] X, decimal[] Y1, decimal[] Y2, string name)
+		private static void CreateLineGraph(int[] X, double[] Y1, double[] Y2, string name)
 		{
 			NPlot.Bitmap.PlotSurface2D npSurface = new NPlot.Bitmap.PlotSurface2D(700, 500);
 
@@ -77,19 +77,43 @@ namespace Diplom1
 			npSurface.Bitmap.Save($"graph_{name}.png");
 		}
 
-		static void Main(string[] args)
+		public static void Start()
 		{
 			Console.WriteLine(@"Укажите время работы алгоритма (мс):");
 			var ms = int.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+			List<int> time = new List<int>();
+			for (int i = 0; i < ms; ++i)
+			{
+				time.Add(i);
+			}
+			double perfectDist = 30;
+			double curDist = 300;
+			double mySpeed = 0;
+			double entrySpeed = 16.7;
+			double lambda = 0.98;
+
+			Console.WriteLine("Введите скорость преследуемого автомобиля (в км/ч):");
+			entrySpeed = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture) * 1000 / 3600;
+			Console.WriteLine("Введите скорость Вашего автомобиля (в км/ч):");
+			mySpeed = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture) * 1000 / 3600;
+			Console.WriteLine("Введите дистанцию, которую требуется соблюдать (в метрах):");
+			perfectDist = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+			Console.WriteLine("Введите расстояние до преследуемого автомобиля (в метрах):");
+			curDist = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+
 			// dS --- расстояние между автомобилями; 
 			// dV --- разница скоростей;
 			// Первые 7 параметров - особые точки для dS (в метрах);
 			// Вторые 7 параметров - особые точки для dV (в м/c);
 			// Оставшиеся 5 параметров - особые точки для V*
-			var s = new Solution(-0.2m, -0.1m, -0.05m, 0m, 0.05m, 0.1m, 0.2m,
-								-0.3m, -0.2m, -0.1m, 0m, 0.1m, 0.2m, 0.3m,
-								2.77778m, 11.11111m, 16.66667m, 22.22222m, 33.33333m);
-			s.ToSolve(ms);
+			var s = new Solution(-0.2, -0.1, -0.05, 0, 0.05, 0.1, 0.2,
+								-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3,
+								2.77778, 11.11111, 16.66667, 22.22222, 33.33333,
+								lambda, perfectDist, curDist, mySpeed, entrySpeed);
+			var res = s.ToSolve(ms);
+			CreateLineGraph(time.ToArray(), res.OwnSpeeds.ToArray(), res.EntrySpeeds.ToArray(), "Speed");
+			CreateLineGraph(time.ToArray(), res.Distances.ToArray(), null, "Distination");
+			CreateLineGraph(time.ToArray(), res.Accelerations.ToArray(), null, "Acceleration");
 			Console.WriteLine("Вычисления выполнены. Графики построены. Нажмите ENTER...");
 			Console.ReadKey();
 		}
@@ -98,43 +122,46 @@ namespace Diplom1
 	public class Solution
 	{
 		// Особые точки для dS
-		private readonly decimal _x1;
-		private readonly decimal _x2;
-		private readonly decimal _x3;
-		private readonly decimal _x4;
-		private readonly decimal _x5;
-		private readonly decimal _x6;
-		private readonly decimal _x7;
+		private readonly double _x1;
+		private readonly double _x2;
+		private readonly double _x3;
+		private readonly double _x4;
+		private readonly double _x5;
+		private readonly double _x6;
+		private readonly double _x7;
 		// Особые точки для dV
-		private readonly decimal _z1;
-		private readonly decimal _z2;
-		private readonly decimal _z3;
-		private readonly decimal _z4;
-		private readonly decimal _z5;
-		private readonly decimal _z6;
-		private readonly decimal _z7;
+		private readonly double _z1;
+		private readonly double _z2;
+		private readonly double _z3;
+		private readonly double _z4;
+		private readonly double _z5;
+		private readonly double _z6;
+		private readonly double _z7;
 		// Особые точки для V*
-		private readonly decimal _y1;
-		private readonly decimal _y2;
-		private readonly decimal _y3;
-		private readonly decimal _y4;
-		private readonly decimal _y5;
+		private readonly double _y1;
+		private readonly double _y2;
+		private readonly double _y3;
+		private readonly double _y4;
+		private readonly double _y5;
 
 		// Скорость в (м/с)
-		private decimal _mySpeed = 16.7m;
+		private double _mySpeed = 0;
 		// Цель движется неравномерно
-		private decimal _entrySpeed = 16.7m;
+		private double _entrySpeed = 16.7;
 		// Требуемая дистанция в (м)
-		private decimal _perfectDistance = 30m;
+		private double _perfectDistance = 30;
 		// Текущая дистанция в (м)
-		private decimal _currentDistance = 300m;
+		private double _currentDistance = 300;
 		// Частота вычислений: 1 (сек)
-		private decimal _teta = 1m;
-		private Dictionary<String, decimal> _rules = new Dictionary<string, decimal>();
+		private double _teta = 1;
+		// Коэф. при вычислении ускорения
+		private double _lambda = 0.98;
+		private Dictionary<string, double> _rules = new Dictionary<string, double>();
 
-		public Solution(decimal x1, decimal x2, decimal x3, decimal x4, decimal x5, decimal x6, decimal x7,
-						decimal z1, decimal z2, decimal z3, decimal z4, decimal z5, decimal z6, decimal z7,
-						decimal y1, decimal y2, decimal y3, decimal y4, decimal y5)
+		public Solution(double x1, double x2, double x3, double x4, double x5, double x6, double x7,
+						double z1, double z2, double z3, double z4, double z5, double z6, double z7,
+						double y1, double y2, double y3, double y4, double y5, double lambda,
+						double perfectDist, double curDist, double mySpeed, double entrySpeed)
 		{
 			_x1 = x1;
 			_x2 = x2;
@@ -158,17 +185,14 @@ namespace Diplom1
 			_y4 = y4;
 			_y5 = y5;
 
-			Console.WriteLine("Введите скорость преследуемого автомобиля (в км/ч):");
-			_entrySpeed = Decimal.Parse(Console.ReadLine(), CultureInfo.InvariantCulture) * 1000 / 3600;
-			Console.WriteLine("Введите скорость Вашего автомобиля (в км/ч):");
-			_mySpeed = Decimal.Parse(Console.ReadLine(), CultureInfo.InvariantCulture) * 1000 / 3600;
-			Console.WriteLine("Введите дистанцию, которую требуется соблюдать (в метрах):");
-			_perfectDistance = Decimal.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-			Console.WriteLine("Введите расстояние до преследуемого автомобиля (в метрах):");
-			_currentDistance = Decimal.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+			_perfectDistance = perfectDist;
+			_currentDistance = curDist;
+			_mySpeed = mySpeed;
+			_entrySpeed = entrySpeed;
+			_lambda = lambda;
 		}
 
-		private decimal _closeDistance(decimal x)
+		private double CloseDistance(double x)
 		{
 			if (_x1 <= x && x <= _x3)
 			{
@@ -181,7 +205,7 @@ namespace Diplom1
 			return 0;
 		}
 
-		private decimal _zeroDistance(decimal x)
+		private double ZeroDistance(double x)
 		{
 			if (_x2 <= x && x <= _x4)
 			{
@@ -194,7 +218,7 @@ namespace Diplom1
 			return 0;
 		}
 
-		private decimal _farDistance(decimal x)
+		private double FarDistance(double x)
 		{
 			if (_x5 <= x && x <= _x7)
 			{
@@ -207,7 +231,7 @@ namespace Diplom1
 			return 0;
 		}
 
-		private decimal _lessSpeed(decimal z)
+		private double LessSpeed(double z)
 		{
 			if (_z1 <= z && z <= _z3)
 			{
@@ -220,7 +244,7 @@ namespace Diplom1
 			return 0;
 		}
 
-		private decimal _zeroSpeed(decimal z)
+		private double ZeroSpeed(double z)
 		{
 			if (_z2 <= z && z <= _z4)
 			{
@@ -233,7 +257,7 @@ namespace Diplom1
 			return 0;
 		}
 
-		private decimal _moreSpeed(decimal z)
+		private double MoreSpeed(double z)
 		{
 			if (_z5 <= z && z <= _z7)
 			{
@@ -246,33 +270,31 @@ namespace Diplom1
 			return 0;
 		}
 
-		public void ToSolve(int time)
+		public Result ToSolve(int time)
 		{
-			decimal lambda = 0.98m;
-
 			Random r = new Random();
 
 			List<int> Time = new List<int>();
-			List<decimal> ownSpeeds = new List<decimal>();
-			List<decimal> entrySpeeds = new List<decimal>();
-			List<decimal> Distance = new List<decimal>();
-			List<decimal> Acceleration = new List<decimal>();
+			List<double> ownSpeeds = new List<double>();
+			List<double> entrySpeeds = new List<double>();
+			List<double> distances = new List<double>();
+			List<double> accelerations = new List<double>();
 
-			decimal deltaDistance, deltaSpeed;
+			double deltaDistance, deltaSpeed;
 			for (int i = 0; i < time; ++i)
 			{
-				entrySpeeds.Add(Decimal.Round(_entrySpeed * 3600 / 1000, 4));
+				entrySpeeds.Add(_entrySpeed * 3600 / 1000);
 				deltaDistance = (_currentDistance - _perfectDistance) / _perfectDistance;
 				deltaSpeed = (_mySpeed - _entrySpeed) / _entrySpeed;
 				// Дефазификация осуществляется по методу Мамдани
 				#region Fuzzification
 				// Три области фазиффикации: близко (прямоуг трапеция), средне (треугольник), далеко (прямоуг. трапеция)
-				decimal A = _closeDistance(deltaDistance);
-				decimal B = _zeroDistance(deltaDistance);
-				decimal C = _farDistance(deltaDistance);
-				decimal D = _lessSpeed(deltaSpeed);
-				decimal E = _zeroSpeed(deltaSpeed);
-				decimal F = _moreSpeed(deltaSpeed);
+				double A = CloseDistance(deltaDistance);
+				double B = ZeroDistance(deltaDistance);
+				double C = FarDistance(deltaDistance);
+				double D = LessSpeed(deltaSpeed);
+				double E = ZeroSpeed(deltaSpeed);
+				double F = MoreSpeed(deltaSpeed);
 				#endregion
 				#region InferenceRule
 				// Правило вывода: прямое соответствие расстояние и скорость - коэффициент лямбда
@@ -294,39 +316,53 @@ namespace Diplom1
 				#endregion
 				#region Defuzzification
 				// Дефазиффикация осуществляется методом Среднего Центра
-				 var resSpeed = (_y3 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
-								+ _y2 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
-								+ _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
-								 + _y4 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
-								 + _y3 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
-								 + _y2 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
-								 + _y5 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
-								 + _y4 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
-								 + _y3 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"])) 
-							/ (Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
-								+ Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
-								+ Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
-								+ Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
-								+ Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
-								+ Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
-								+ Math.Min(_rules["FarDist"], _rules["LessSpeed"])
-								+ Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
-								+ Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
+				var resSpeed = (_y3 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+							   + _y2 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+							   + _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
+								+ _y4 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
+								+ _y3 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
+								+ _y2 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
+								+ _y5 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
+								+ _y4 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
+								+ _y3 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"]))
+						   / (Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+							   + Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+							   + Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
+							   + Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
+							   + Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
+							   + Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
+							   + Math.Min(_rules["FarDist"], _rules["LessSpeed"])
+							   + Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
+							   + Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
 				#endregion
 
-				var a = lambda * (resSpeed - _mySpeed);
+				var a = _lambda * (resSpeed - _mySpeed);
 				_mySpeed += _teta * a;
 				_currentDistance -= _teta * (_mySpeed - _entrySpeed);
 				Time.Add(i);
-				ownSpeeds.Add(Decimal.Round(_mySpeed * 3600 / 1000, 4));
-				Distance.Add(Decimal.Round(_currentDistance, 4));
-				Acceleration.Add(Decimal.Round(a, 4));
-				_entrySpeed += (decimal)(r.Next(-70, 70) * r.NextDouble());
-				_entrySpeed = Math.Min(40m, Math.Max(_entrySpeed, 5m));
+				ownSpeeds.Add(_mySpeed * 3600 / 1000);
+				distances.Add(_currentDistance);
+				accelerations.Add(a);
+				_entrySpeed += (r.Next(-70, 70) * r.NextDouble());
+				_entrySpeed = Math.Min(40, Math.Max(_entrySpeed, 5));
 			}
-			Program.CreateLineGraph(Time.ToArray(), ownSpeeds.ToArray(), entrySpeeds.ToArray(), "Speed");
-			Program.CreateLineGraph(Time.ToArray(), Distance.ToArray(), null, "Distination");
-			Program.CreateLineGraph(Time.ToArray(), Acceleration.ToArray(), null, "Acceleration");
+			return new Result(ownSpeeds, entrySpeeds, distances, accelerations);
+		}
+	}
+
+	public class Result
+	{
+		public List<double> OwnSpeeds { get; set; }
+		public List<double> EntrySpeeds { get; set; }
+		public List<double> Distances { get; set; }
+		public List<double> Accelerations { get; set; }
+
+		public Result(List<double> a, List<double> b, List<double> c, List<double> d)
+		{
+			OwnSpeeds = a;
+			EntrySpeeds = b;
+			Distances = c;
+			Accelerations = d;
 		}
 	}
 }
