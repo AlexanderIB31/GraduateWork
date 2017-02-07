@@ -1,0 +1,12 @@
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\obj\Debug\Diplom1.exe
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\obj\Debug\Diplom1.pdb
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\bin\Debug\Diplom1.exe.config
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\bin\Debug\Diplom1.exe
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\bin\Debug\Diplom1.pdb
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\bin\Debug\HelperSharp.dll
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\bin\Debug\NCalc.dll
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\bin\Debug\NPlot.dll
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\bin\Debug\SmartThreadPool.dll
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\bin\Debug\HelperSharp.pdb
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\bin\Debug\SmartThreadPool.pdb
+C:\Users\Alex31\Documents\Visual Studio 2015\Projects\GraduateWork\Diplom1\obj\Debug\Algorithm.csprojResolveAssemblyReference.cache

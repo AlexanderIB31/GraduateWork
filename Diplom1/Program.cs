@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Drawing;
 using NPlot;
 
-namespace Diplom1
+namespace Algorithm
 {
 	public class Program
 	{
@@ -74,7 +74,7 @@ namespace Diplom1
 			//Update PlotSurface:
 			npSurface.Refresh();
 
-			npSurface.Bitmap.Save($"graph_{name}.png");
+			npSurface.Bitmap.Save($"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\graph_{name}.png");
 		}
 
 		public static void Main(string[] args)
@@ -86,11 +86,11 @@ namespace Diplom1
 			{
 				time.Add(i);
 			}
+
 			double perfectDist = 30;
 			double curDist = 300;
 			double mySpeed = 0;
 			double entrySpeed = 16.7;
-			double lambda = 0.98;
 
 			Console.WriteLine("Введите скорость преследуемого автомобиля (в км/ч):");
 			entrySpeed = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture) * 1000 / 3600;
@@ -101,15 +101,18 @@ namespace Diplom1
 			Console.WriteLine("Введите расстояние до преследуемого автомобиля (в метрах):");
 			curDist = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
 
+			List<double> parameters;
+			// Считываем параметры для Solution из файла params.txt, сгенерированным проектом GA
+			using (var fr = new System.IO.StreamReader($"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\params.txt"))
+			{
+				parameters = new List<double>(Array.ConvertAll(fr.ReadToEnd().TrimEnd('|').Split('|'), double.Parse));
+			}
 			// dS --- расстояние между автомобилями; 
 			// dV --- разница скоростей;
 			// Первые 7 параметров - особые точки для dS (в метрах);
 			// Вторые 7 параметров - особые точки для dV (в м/c);
 			// Оставшиеся 5 параметров - особые точки для V*
-			var s = new Solution(-6.86431407675348, -0.0767831365469765, -0.0140079527460076, 0,  0.0118658099518464, 0.0987010085669816,  3.4255271734323,
-								-3.34386826751002, -0.0744704210918725, -0.0133997615163213, 0, 0.0253053503182276, 0.0938345747039814, 3.92124659727386,
-								1.2050993395993, 7.61049976726552, 18.8201591582131, 32.2351514517493, 49.5516308641767, 0.702309126361417,
-								perfectDist, curDist, mySpeed, entrySpeed);
+			var s = new Solution(parameters.ToArray(), perfectDist, curDist, mySpeed, entrySpeed);
 			var res = s.ToSolve(ms);
 			CreateLineGraph(time.ToArray(), res.OwnSpeeds.ToArray(), res.EntrySpeeds.ToArray(), "Speed");
 			CreateLineGraph(time.ToArray(), res.Distances.ToArray(), null, "Distination");
@@ -158,38 +161,43 @@ namespace Diplom1
 		private double _lambda = 0.98;
 		private Dictionary<string, double> _rules = new Dictionary<string, double>();
 
-		public Solution(double x1, double x2, double x3, double x4, double x5, double x6, double x7,
-						double z1, double z2, double z3, double z4, double z5, double z6, double z7,
-						double y1, double y2, double y3, double y4, double y5, double lambda,
-						double perfectDist, double curDist, double mySpeed, double entrySpeed)
+		public Solution(double[] args, double perfectDist, double curDist, double mySpeed, double entrySpeed)
 		{
-			_x1 = x1;
-			_x2 = x2;
-			_x3 = x3;
-			_x4 = x4;
-			_x5 = x5;
-			_x6 = x6;
-			_x7 = x7;
+			try
+			{
+				_x1 = args[0];
+				_x2 = args[1];
+				_x3 = args[2];
+				_x4 = args[3];
+				_x5 = args[4];
+				_x6 = args[5];
+				_x7 = args[6];
 
-			_z1 = z1;
-			_z2 = z2;
-			_z3 = z3;
-			_z4 = z4;
-			_z5 = z5;
-			_z6 = z6;
-			_z7 = z7;
+				_z1 = args[7];
+				_z2 = args[8];
+				_z3 = args[9];
+				_z4 = args[10];
+				_z5 = args[11];
+				_z6 = args[12];
+				_z7 = args[13];
 
-			_y1 = y1;
-			_y2 = y2;
-			_y3 = y3;
-			_y4 = y4;
-			_y5 = y5;
+				_y1 = args[14];
+				_y2 = args[15];
+				_y3 = args[16];
+				_y4 = args[17];
+				_y5 = args[18];
 
-			_perfectDistance = perfectDist;
-			_currentDistance = curDist;
-			_mySpeed = mySpeed;
-			_entrySpeed = entrySpeed;
-			_lambda = lambda;
+				_perfectDistance = perfectDist;
+				_currentDistance = curDist;
+				_mySpeed = mySpeed;
+				_entrySpeed = entrySpeed;
+				_lambda = args[19];
+			}
+			catch (ArgumentOutOfRangeException ex)
+			{
+				Console.WriteLine("! проверьте кол-во передаваемых в args параметров, их должно быть 20 !");
+				throw ex;
+			}
 		}
 
 		private double CloseDistance(double x)
@@ -343,7 +351,7 @@ namespace Diplom1
 				ownSpeeds.Add(_mySpeed * 3600 / 1000);
 				distances.Add(_currentDistance);
 				accelerations.Add(a);
-				_entrySpeed += (r.Next(-70, 70) * r.NextDouble());
+				_entrySpeed += (r.Next(-40, 40) * r.NextDouble());
 				_entrySpeed = Math.Min(40, Math.Max(_entrySpeed, 5));
 			}
 			return new Result(ownSpeeds, entrySpeeds, distances, accelerations);
