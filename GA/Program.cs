@@ -31,7 +31,7 @@ namespace GA
 			ga.Start();
 
 			Console.WriteLine($"Best solution found has {ga.BestChromosome.Fitness} fitness.");
-			using (var fw = new System.IO.StreamWriter($"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\params.txt"))
+			using (var fw = new System.IO.StreamWriter(@"C:\Users\Alex31\Desktop\params.txt"))
 			{
 				foreach (var x in ga.BestChromosome.GetGenes())
 				{

@@ -955,7 +955,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 341300511}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 13.61}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 635230536}
@@ -8089,8 +8089,8 @@ GameObject:
   - component: {fileID: 1588562134}
   - component: {fileID: 1588562133}
   - component: {fileID: 1588562132}
-  - component: {fileID: 1588562131}
   - component: {fileID: 1588562130}
+  - component: {fileID: 1588562131}
   m_Layer: 0
   m_Name: PursuerCar
   m_TagString: Player
@@ -8125,15 +8125,16 @@ MonoBehaviour:
 --- !u!114 &1588562131
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 11400022, guid: 0e7ee4df08df88c4880f43398f9ad2c2,
-    type: 2}
+  m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1588562129}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 96468c245ae8e0d4f8f1c7a7b8b0542e, type: 3}
+  m_Script: {fileID: 11500000, guid: 7c4c92317eef3c7428bfc1a638759d32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  entry_Rigidbody: {fileID: 341300515}
+  entry_Target: {fileID: 332488660}
 --- !u!114 &1588562132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8141,7 +8142,7 @@ MonoBehaviour:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1588562129}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ea65b38d485c374caa584a03f1de571, type: 3}
   m_Name: 
@@ -8848,7 +8849,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8d3968294210ba4a9d2bb96dfa74a16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Target: {fileID: 1588562134}
+  m_Target: {fileID: 332488660}
   m_AutoTargetPlayer: 1
   m_UpdateType: 0
   m_MoveSpeed: 15

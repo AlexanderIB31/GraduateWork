@@ -157,6 +157,10 @@ namespace UnityStandardAssets.Vehicles.Car
 				m_WheelMeshes[i].transform.rotation = quat;
 			}
 
+			if (accel > 1)
+			{
+				var t = accel;
+			}
 			//clamp input values
 			steering = Mathf.Clamp(steering, -1, 1);
 			AccelInput = accel = Mathf.Clamp(accel, 0, 1);

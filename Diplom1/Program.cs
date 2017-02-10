@@ -356,6 +356,63 @@ namespace Algorithm
 			}
 			return new Result(ownSpeeds, entrySpeeds, distances, accelerations);
 		}
+
+		public double ToSolveNow(double entrySpeed, double mySpeed, double curDistance, double perfectDistance)
+		{
+			var deltaDistance = (curDistance - perfectDistance) / perfectDistance;
+			var deltaSpeed = (mySpeed - entrySpeed) / entrySpeed;
+			// Дефазификация осуществляется по методу Мамдани
+			#region Fuzzification
+			// Три области фазиффикации: близко (прямоуг трапеция), средне (треугольник), далеко (прямоуг. трапеция)
+			double A = CloseDistance(deltaDistance);
+			double B = ZeroDistance(deltaDistance);
+			double C = FarDistance(deltaDistance);
+			double D = LessSpeed(deltaSpeed);
+			double E = ZeroSpeed(deltaSpeed);
+			double F = MoreSpeed(deltaSpeed);
+			#endregion
+			#region InferenceRule
+			// Правило вывода: прямое соответствие расстояние и скорость - коэффициент лямбда
+			// ++ - Сильно Увеличить
+			// -- - Сильно Снизить
+			// + - Немного Увеличить
+			// - - Немного Уменьшить
+			// 0 - Ничего не делать
+			// dS\dV	-	0	+
+			// -		0	-	--
+			// 0		+	0	-
+			// +		++	+	0
+			_rules["CloseDist"] = A;
+			_rules["ZeroDist"] = B;
+			_rules["FarDist"] = C;
+			_rules["LessSpeed"] = D;
+			_rules["ZeroSpeed"] = E;
+			_rules["MoreSpeed"] = F;
+			#endregion
+			#region Defuzzification
+			// Дефазиффикация осуществляется методом Среднего Центра
+			var resSpeed = (_y3 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+						   + _y2 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+						   + _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
+							+ _y4 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
+							+ _y3 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
+							+ _y2 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
+							+ _y5 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
+							+ _y4 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
+							+ _y3 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"]))
+					   / (Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+						   + Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+						   + Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
+						   + Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
+						   + Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
+						   + Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
+						   + Math.Min(_rules["FarDist"], _rules["LessSpeed"])
+						   + Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
+						   + Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
+			#endregion
+
+			return _lambda * (resSpeed - mySpeed);
+		}
 	}
 
 	public class Result

@@ -202,11 +202,10 @@
     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\LandingGear.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\BrakeLight.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarAIControl.cs" />
+    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarAlgoControl.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarAudio.cs" />
-    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarAlgoController.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarController.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarSelfRighting.cs" />
-    <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarAlgoControl .cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarUserControl.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\Mudguard.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\SkidTrail.cs" />
