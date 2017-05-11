@@ -71,14 +71,15 @@ namespace Diplom1
 				_y1 = args[14];
 				_y2 = args[15];
 				_y3 = args[16];
-				_y4 = args[17];
-				_y5 = args[18];
+				//_y4 = args[17];
+				//_y5 = args[18];
 
 				_perfectDistance = perfectDist;
 				_currentDistance = curDist;
 				_mySpeed = mySpeed;
 				_entrySpeed = entrySpeed;
-				_lambda = args[19];
+				//_lambda = args[19];
+				_lambda = args[17];
 			}
 			catch (ArgumentOutOfRangeException ex)
 			{
@@ -228,15 +229,13 @@ namespace Diplom1
 			#endregion
 			#region InferenceRule
 			// Правило вывода: прямое соответствие расстояние и скорость - коэффициент лямбда
-			// ++ - Сильно Увеличить
-			// -- - Сильно Снизить
-			// + - Немного Увеличить
-			// - - Немного Уменьшить
+			// + - Увеличить
+			// - - Снизить
 			// 0 - Ничего не делать
 			// dS\dV	-	0	+
-			// -		0	-	--
+			// -		0	-	-
 			// 0		+	0	-
-			// +		++	+	0
+			// +		+	+	0
 			_rules["CloseDist"] = A;
 			_rules["ZeroDist"] = B;
 			_rules["FarDist"] = C;
@@ -246,23 +245,11 @@ namespace Diplom1
 			#endregion
 			#region Defuzzification
 			// Дефазиффикация осуществляется методом Среднего Центра (центроидный метод)
-			var resAccel = (_y3 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
-						   + _y2 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
-						   + _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
-							+ _y4 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
-							+ _y3 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
-							+ _y2 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
-							+ _y5 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
-							+ _y4 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
+			var resAccel = (_y1 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+							+ _y2 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
 							+ _y3 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"]))
 					   / (Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
-						   + Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
-						   + Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
-						   + Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
 						   + Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
-						   + Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
-						   + Math.Min(_rules["FarDist"], _rules["LessSpeed"])
-						   + Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
 						   + Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
 			#endregion
 			Console.ForegroundColor = ConsoleColor.Magenta;

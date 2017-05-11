@@ -34,7 +34,7 @@ namespace Diplom1
 			curDist = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
 
 			List<double> parameters;
-			var path = @"./params.txt";
+			var path = @"./params2.txt";
 			// Считываем параметры для Solution из файла params.txt, сгенерированным проектом GA
 			using (var fr = new System.IO.StreamReader($"{path}"))
 			{
