@@ -17,6 +17,12 @@ namespace Diplom1
 		private static double _x5;
 		private static double _x6;
 		private static double _x7;
+		private static double _x8;
+		private static double _x9;
+		private static double _x10;
+		private static double _x11;
+		private static double _x12;
+		private static double _x13;
 		// Особые точки для dV
 		private static double _z1;
 		private static double _z2;
@@ -25,7 +31,12 @@ namespace Diplom1
 		private static double _z5;
 		private static double _z6;
 		private static double _z7;
-		// Особые точки для a (ускорение)
+		private static double _z8;
+		private static double _z9;
+		private static double _z10;
+		private static double _z11;
+		private static double _z12;
+		private static double _z13;
 		private static double _y1;
 		private static double _y2;
 		private static double _y3;
@@ -68,18 +79,32 @@ namespace Diplom1
 				_x5 = args[4];
 				_x6 = args[5];
 				_x7 = args[6];
+				_x8 = args[7];
+				_x9 = args[8];
+				_x10 = args[9];
+				_x11 = args[10];
+				_x12 = args[11];
+				_x13 = args[12];
 
-				_z1 = args[7];
-				_z2 = args[8];
-				_z3 = args[9];
-				_z4 = args[10];
-				_z5 = args[11];
-				_z6 = args[12];
-				_z7 = args[13];
+				_z1 = args[13];
+				_z2 = args[14];
+				_z3 = args[15];
+				_z4 = args[16];
+				_z5 = args[17];
+				_z6 = args[18];
+				_z7 = args[19];
+				_z8 = args[20];
+				_z9 = args[21];
+				_z10 = args[22];
+				_z11 = args[23];
+				_z12 = args[24];
+				_z13 = args[25];
 
-				_y1 = args[14];
-				_y2 = args[15];
-				_y3 = args[16];
+				_y1 = args[26];
+				_y2 = args[27];
+				_y3 = args[28];
+				_y4 = args[29];
+				_y5 = args[30];
 
 				_criticalDistance = criticalDist;
 				_currentDistance = curDist;
@@ -97,7 +122,7 @@ namespace Diplom1
 		}
 
 		#region Фаззификация для Дистанции
-		private static double CloseDistance(double x)
+		private static double VeryCloseDistance(double x)
 		{
 			if (_x1 <= x && x <= _x3)
 			{
@@ -110,7 +135,7 @@ namespace Diplom1
 			return 0;
 		}
 
-		private static double ZeroDistance(double x)
+		private static double CloseDistance(double x)
 		{
 			if (_x2 <= x && x <= _x4)
 			{
@@ -123,21 +148,48 @@ namespace Diplom1
 			return 0;
 		}
 
-		private static double FarDistance(double x)
+		private static double ZeroDistance(double x)
 		{
 			if (_x5 <= x && x <= _x7)
 			{
 				return (x - _x5) / (_x7 - _x5);
 			}
-			if (_x7 <= x)
+			if (_x7 <= x && x <= _x9)
+			{
+				return (_x9 - x) / (_x9 - _x7);
+			}
+			return 0;
+		}
+
+		private static double FarDistance(double x)
+		{
+			if (_x8 <= x && x <= _x10)
+			{
+				return (x - _x8) / (_x10 - _x8);
+			}
+			if (_x10 <= x && x <= _x12)
+			{
+				return (_x12 - x) / (_x12 - _x10);
+			}
+			return 0;
+		}
+
+		private static double VeryFarDistance(double x)
+		{
+			if (_x11 <= x && x <= _x13)
+			{
+				return (x - _x11) / (_x13 - _x11);
+			}
+			if (_x13 <= x)
 			{
 				return 1;
 			}
 			return 0;
 		}
 		#endregion
+
 		#region Фаззификация для Скорости
-		private static double LessSpeed(double z)
+		private static double VeryLessSpeed(double z)
 		{
 			if (_z1 <= z && z <= _z3)
 			{
@@ -150,7 +202,7 @@ namespace Diplom1
 			return 0;
 		}
 
-		private static double ZeroSpeed(double z)
+		private static double LessSpeed(double z)
 		{
 			if (_z2 <= z && z <= _z4)
 			{
@@ -163,13 +215,39 @@ namespace Diplom1
 			return 0;
 		}
 
-		private static double MoreSpeed(double z)
+		private static double ZeroSpeed(double z)
 		{
 			if (_z5 <= z && z <= _z7)
 			{
 				return (z - _z5) / (_z7 - _z5);
 			}
-			if (_z7 <= z)
+			if (_z7 <= z && z <= _z9)
+			{
+				return (_z9 - z) / (_z9 - _z7);
+			}
+			return 0;
+		}
+
+		private static double MoreSpeed(double z)
+		{
+			if (_z8 <= z && z <= _z10)
+			{
+				return (z - _z8) / (_z10 - _z8);
+			}
+			if (_z10 <= z && z <= _z12)
+			{
+				return (_z12 - z) / (_z12 - _z10);
+			}
+			return 0;
+		}
+
+		private static double VeryMoreSpeed(double z)
+		{
+			if (_z11 <= z && z <= _z13)
+			{
+				return (z - _z11) / (_z13 - _z11);
+			}
+			if (_z13 <= z)
 			{
 				return 1;
 			}
@@ -227,42 +305,91 @@ namespace Diplom1
 			var deltaSpeed = cruiseCntrlSpeed != 0 ? (mySpeed - cruiseCntrlSpeed) / cruiseCntrlSpeed : 0;
 
 			#region Fuzzification
-			// Три области фазиффикации: близко/медленно (прямоуг трапеция), отлично (треугольник), далеко/быстро (прямоуг. трапеция)
-			double A = CloseDistance(deltaDistance);
-			double B = ZeroDistance(deltaDistance);
-			double C = FarDistance(deltaDistance);
-			double D = LessSpeed(deltaSpeed);
-			double E = ZeroSpeed(deltaSpeed);
-			double F = MoreSpeed(deltaSpeed);
+			// Пять областей фазиффикации: очень близко (прямоуг трапеция), близко (треугольник), отлично (треугольник), далеко (треугольник), очень далеко (прямоуг. трапеция)
+			double A1 = VeryCloseDistance(deltaDistance);
+			double B1 = CloseDistance(deltaDistance);
+			double C1 = ZeroDistance(deltaDistance);
+			double D1 = FarDistance(deltaDistance);
+			double E1 = VeryFarDistance(deltaDistance);
+
+			double A2 = VeryLessSpeed(deltaSpeed);
+			double B2 = LessSpeed(deltaSpeed);
+			double C2 = ZeroSpeed(deltaSpeed);
+			double D2 = MoreSpeed(deltaSpeed);
+			double E2 = VeryMoreSpeed(deltaSpeed);
 			#endregion
 			#region InferenceRule
-			_rules["CloseDist"] = A;
-			_rules["ZeroDist"] = B;
-			_rules["FarDist"] = C;
-			_rules["LessSpeed"] = D;
-			_rules["ZeroSpeed"] = E;
-			_rules["MoreSpeed"] = F;
+			_rules["VeryCloseDist"] = A1;
+			_rules["CloseDist"] = B1;
+			_rules["ZeroDist"] = C1;
+			_rules["FarDist"] = D1;
+			_rules["VeryFarDist"] = E1;
+			_rules["VeryLessSpeed"] = A2;
+			_rules["LessSpeed"] = B2;
+			_rules["ZeroSpeed"] = C2;
+			_rules["MoreSpeed"] = D2;
+			_rules["VeryMoreSpeed"] = E2;
 			#endregion
 			#region Defuzzification
 			// Дефазиффикация осуществляется методом Среднего Центра (центроидный метод)
-			var resAccel = (_y1 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
-							 + _y1 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+			var resAccel = (_y1 * Math.Min(_rules["VeryCloseDist"], _rules["VeryLessSpeed"])
+						   + _y1 * Math.Min(_rules["VeryCloseDist"], _rules["LessSpeed"])
+						   + _y1 * Math.Min(_rules["VeryCloseDist"], _rules["ZeroSpeed"])
+							 + _y1 * Math.Min(_rules["VeryCloseDist"], _rules["MoreSpeed"])
+							 + _y1 * Math.Min(_rules["VeryCloseDist"], _rules["VeryMoreSpeed"])
+
+							 + _y2 * Math.Min(_rules["CloseDist"], _rules["VeryLessSpeed"])
+							 + _y2 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+							 + _y2 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
 							 + _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
-							+ _y2 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
-							+ _y2 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
-							+ _y1 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
-							+ _y3 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
-							+ _y2 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
-							+ _y1 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"]))
-						 / (Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+							 + _y1 * Math.Min(_rules["CloseDist"], _rules["VeryMoreSpeed"])
+
+							 + _y3 * Math.Min(_rules["ZeroDist"], _rules["VeryLessSpeed"])
+							 + _y3 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
+							 + _y3 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
+							 + _y2 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
+							 + _y1 * Math.Min(_rules["ZeroDist"], _rules["VeryMoreSpeed"])
+
+							 + _y5 * Math.Min(_rules["FarDist"], _rules["VeryLessSpeed"])
+							 + _y4 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
+							 + _y3 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
+							 + _y2 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"])
+							 + _y1 * Math.Min(_rules["FarDist"], _rules["VeryMoreSpeed"])
+
+							 + _y5 * Math.Min(_rules["VeryFarDist"], _rules["VeryLessSpeed"])
+							 + _y4 * Math.Min(_rules["VeryFarDist"], _rules["LessSpeed"])
+							 + _y3 * Math.Min(_rules["VeryFarDist"], _rules["ZeroSpeed"])
+							 + _y2 * Math.Min(_rules["VeryFarDist"], _rules["MoreSpeed"])
+							 + _y2 * Math.Min(_rules["VeryFarDist"], _rules["VeryMoreSpeed"]))
+						/ (Math.Min(_rules["VeryCloseDist"], _rules["VeryLessSpeed"])
+							 + Math.Min(_rules["VeryCloseDist"], _rules["LessSpeed"])
+							 + Math.Min(_rules["VeryCloseDist"], _rules["ZeroSpeed"])
+							 + Math.Min(_rules["VeryCloseDist"], _rules["MoreSpeed"])
+							 + Math.Min(_rules["VeryCloseDist"], _rules["VeryMoreSpeed"])
+
+							 + Math.Min(_rules["CloseDist"], _rules["VeryLessSpeed"])
+							 + Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
 							 + Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
 							 + Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
+							 + Math.Min(_rules["CloseDist"], _rules["VeryMoreSpeed"])
+
+							 + Math.Min(_rules["ZeroDist"], _rules["VeryLessSpeed"])
 							 + Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
 							 + Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
 							 + Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
+							 + Math.Min(_rules["ZeroDist"], _rules["VeryMoreSpeed"])
+
+							 + Math.Min(_rules["FarDist"], _rules["VeryLessSpeed"])
 							 + Math.Min(_rules["FarDist"], _rules["LessSpeed"])
 							 + Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
-							 + Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
+							 + Math.Min(_rules["FarDist"], _rules["MoreSpeed"])
+							 + Math.Min(_rules["FarDist"], _rules["VeryMoreSpeed"])
+
+							 + Math.Min(_rules["VeryFarDist"], _rules["VeryLessSpeed"])
+							 + Math.Min(_rules["VeryFarDist"], _rules["LessSpeed"])
+							 + Math.Min(_rules["VeryFarDist"], _rules["ZeroSpeed"])
+							 + Math.Min(_rules["VeryFarDist"], _rules["MoreSpeed"])
+							 + Math.Min(_rules["VeryFarDist"], _rules["VeryMoreSpeed"]));
 			#endregion
 
 			return resAccel;
@@ -286,6 +413,16 @@ namespace Diplom1
 					break;
 			}
 			return val;
+		}
+
+		public static double ConvertSpeedFromKilometersToMeters(double from)
+		{
+			return from * 1000 / 3600;
+		}
+
+		public static double ConvertSpeedFromMetersToKilometers(double from)
+		{
+			return from * 3600 / 1000;
 		}
 		/// <summary>
 		/// Преобразование скорости из км/ч в м/с
