@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Diplom1
 {
+	/// <summary>
+	/// Алгоритм адаптивного круиз-контроля с использованием Нечеткой Логики
+	/// </summary>
 	public static class Solution
 	{
 		#region Ключевые точки нечетких множеств
@@ -22,7 +25,7 @@ namespace Diplom1
 		private static double _z5;
 		private static double _z6;
 		private static double _z7;
-		// Особые точки для V*
+		// Особые точки для a (ускорение)
 		private static double _y1;
 		private static double _y2;
 		private static double _y3;
@@ -33,7 +36,7 @@ namespace Diplom1
 		// Скорость в (м/с)
 		private static double _mySpeed = 0;
 		// Цель движется неравномерно
-		private static double _entrySpeed = 16.7;
+		private static double _entrySpeed = 0;
 		// Скорость которую выставляем круиз-контролю (которую требуется поддерживать)
 		private static double _cruiseControlSpeed = 16.7;
 		// Минимальная безопасная дистанция до впереди идущей машины в (м)
@@ -45,7 +48,15 @@ namespace Diplom1
 
 		// Таблица правил вывода
 		private static Dictionary<string, double> _rules = new Dictionary<string, double>();
-
+		/// <summary>
+		/// Задание параметров (границ нечетких множеств, скоростей и дистанции); Инициализация
+		/// </summary>
+		/// <param name="args">Границы нечетких множеств (для дистанции (входные данные), для скорости (входные данные), для ускорения (выходная переменная))</param>
+		/// <param name="criticalDist">Минимальное расстояние до впереди идущего автомобиля</param>
+		/// <param name="curDist">Начальное расстояние до впереди идущего автомобиля</param>
+		/// <param name="mySpeed">Начальная скорость автомобиля с адаптивным круиз-контролем</param>
+		/// <param name="entrySpeed">Начальная скорость впереди идущего автомобиля</param>
+		/// <param name="cruiseControlSpeed">Скорость, которую должен поддерживать адаптивный круиз-контроль</param>
 		public static void SetParams(double[] args, double criticalDist, double curDist, double mySpeed, double entrySpeed, double cruiseControlSpeed)
 		{
 			try
@@ -76,8 +87,8 @@ namespace Diplom1
 				_entrySpeed = entrySpeed;
 				_cruiseControlSpeed = cruiseControlSpeed;
 			}
-			catch (ArgumentOutOfRangeException ex)
-			{
+			catch (IndexOutOfRangeException ex)
+			{				
 				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("Ошибка: проверьте кол-во передаваемых в args параметров, их должно быть 17!");
 				Console.ResetColor();
@@ -166,6 +177,12 @@ namespace Diplom1
 		}
 		#endregion
 
+		/// <summary>
+		/// Полное решение на протяжении всего интервала времени
+		/// </summary>
+		/// <param name="time">Время работы алгоритма</param>
+		/// <param name="ta">Тип поведения впереди идущего автомобиля</param>
+		/// <returns></returns>
 		public static SolutionResult ToSolve(int time, TypeAction ta)
 		{
 			Random r = new Random();
@@ -182,11 +199,9 @@ namespace Diplom1
 				entrySpeeds.Add(ConvertSpeedFromMetersToKilometers(_entrySpeed));
 				Time.Add(i);
 
-				var accel = ToSolveNow();
+				var accel = ToSolveNow(_currentDistance, _criticalDistance, _mySpeed, _cruiseControlSpeed);
 				_mySpeed = Math.Max(_mySpeed + _tau * accel, 0);
-				//Console.ForegroundColor = ConsoleColor.Cyan;
-				//Console.WriteLine($"Speed: {_mySpeed}");
-				//Console.ResetColor();
+
 				if (_currentDistance - _tau * (_mySpeed - _entrySpeed) <= _eps)
 				{
 					_mySpeed = 0;
@@ -202,19 +217,17 @@ namespace Diplom1
 			return new SolutionResult(ownSpeeds, entrySpeeds, distances, accelerations);
 		}
 
-		public static double ToSolveNow()
+		/// <summary>
+		/// Решение в конкретный момент времени
+		/// </summary>
+		/// <returns>Возвращает ускорение, с которым должен двигаться в данный момент автомобиль с адаптивным круиз-контролем</returns>
+		public static double ToSolveNow(double curDistance, double critDistance, double mySpeed, double cruiseCntrlSpeed)
 		{
-			var accel = MamdaniSchema();
-			return accel;
-		}
-
-		private static double MamdaniSchema()
-		{
-			var deltaDistance = _criticalDistance != 0 ? (_currentDistance - _criticalDistance) / _criticalDistance : 0;
-			var deltaSpeed = _cruiseControlSpeed != 0 ? (_mySpeed - _cruiseControlSpeed) / _cruiseControlSpeed : 0;
+			var deltaDistance = critDistance != 0 ? (curDistance - critDistance) / critDistance : 0;
+			var deltaSpeed = cruiseCntrlSpeed != 0 ? (mySpeed - cruiseCntrlSpeed) / cruiseCntrlSpeed : 0;
 
 			#region Fuzzification
-			// Три области фазиффикации: близко (прямоуг трапеция), средне (треугольник), далеко (прямоуг. трапеция)
+			// Три области фазиффикации: близко/медленно (прямоуг трапеция), отлично (треугольник), далеко/быстро (прямоуг. трапеция)
 			double A = CloseDistance(deltaDistance);
 			double B = ZeroDistance(deltaDistance);
 			double C = FarDistance(deltaDistance);
@@ -223,16 +236,6 @@ namespace Diplom1
 			double F = MoreSpeed(deltaSpeed);
 			#endregion
 			#region InferenceRule
-			// Правило вывода: прямое соответствие расстояние и скорость - коэффициент лямбда
-			// ++ - Сильно Увеличить
-			// -- - Сильно Снизить
-			// + - Немного Увеличить
-			// - - Немного Уменьшить
-			// 0 - Ничего не делать
-			// dS\dV	-	0	+
-			// -		0	-	--
-			// 0		+	0	-
-			// +		++	+	0
 			_rules["CloseDist"] = A;
 			_rules["ZeroDist"] = B;
 			_rules["FarDist"] = C;
@@ -243,35 +246,28 @@ namespace Diplom1
 			#region Defuzzification
 			// Дефазиффикация осуществляется методом Среднего Центра (центроидный метод)
 			var resAccel = (_y1 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
-						   + _y1 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
-						   + _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
+							 + _y1 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+							 + _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
 							+ _y2 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
 							+ _y2 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
 							+ _y1 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
 							+ _y3 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
 							+ _y2 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
 							+ _y1 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"]))
-					   / (Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
-						   + Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
-						   + Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
-						   + Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
-						   + Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
-						   + Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
-						   + Math.Min(_rules["FarDist"], _rules["LessSpeed"])
-						   + Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
-						   + Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
+						 / (Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+							 + Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+							 + Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
+							 + Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
+							 + Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
+							 + Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
+							 + Math.Min(_rules["FarDist"], _rules["LessSpeed"])
+							 + Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
+							 + Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
 			#endregion
-			//Console.ForegroundColor = ConsoleColor.Magenta;
-			//Console.WriteLine($"Accel: {resAccel}");
-			//Console.ResetColor();
+
 			return resAccel;
 		}
 
-		private static double SugenoSchema()
-		{
-			return 0;
-		}
-	
 		private static double CalcEntrySpeed(TypeAction ta, int curTime)
 		{
 			double val = _entrySpeed;
@@ -291,32 +287,64 @@ namespace Diplom1
 			}
 			return val;
 		}
-
+		/// <summary>
+		/// Преобразование скорости из км/ч в м/с
+		/// </summary>
+		/// <param name="from">Скорость в км/ч</param>
+		/// <returns></returns>
 		public static double ConvertSpeedFromKilometersToMeters(double from)
 		{
 			return from * 1000 / 3600;
 		}
-
+		/// <summary>
+		/// Преобразование скорости из м/с в км/ч
+		/// </summary>
+		/// <param name="from">Скорость в м/с</param>
+		/// <returns></returns>
 		public static double ConvertSpeedFromMetersToKilometers(double from)
 		{
 			return from * 3600 / 1000;
 		}
 	}
-
+	/// <summary>
+	/// Класс агрегатор для возвращения из моей программы всех необхоимых данных, для отрисовки графиков
+	/// </summary>
 	public class SolutionResult
 	{
+		/// <summary>
+		/// Скорость автомобиля с адаптивным круиз-контролем на протяжении всей работы алгоритма
+		/// Массив скоростей в каждый момент времени
+		/// </summary>
 		public List<double> OwnSpeeds { get; set; }
+		/// <summary>
+		/// Скорость впереди идущего автомобиля на протяжении всей работы алгорима
+		/// Массив скоростей в каждый момент времени
+		/// </summary>
 		public List<double> EntrySpeeds { get; set; }
+		/// <summary>
+		/// Расстояние до впереди идущего автомобиля на протяжении всей работы алгоритма
+		/// Массив расстояний в каждый момент времени
+		/// </summary>
 		public List<double> Distances { get; set; }
+		/// <summary>
+		/// Ускорение автомобиля с адаптивным круиз-контролем на протяжении всей рабоыт алгоритма
+		/// Массив ускорений в каждый момент времени
+		/// </summary>
 		public List<double> Accelerations { get; set; }
 
-		public SolutionResult(List<double> a, List<double> b, List<double> c, List<double> d)
+		/// <summary>
+		/// Тривиальный конструктор, каждому свойству присваивается соответствующий аргумент-список из параметров конструктора
+		/// </summary>
+		/// <param name="ownspeeds">массив изменения скорости автомобиля с адаптивным круиз-контролем на протяжении всей работы алгоритма</param>
+		/// <param name="entryspeeds">массив изменения скорости впереди идущего автомобиля на протяжении всей работы алгоритма</param>
+		/// <param name="distances">массив изменения расстояния до впереди идущего автомобиля на протяжении всей работы алгоритма</param>
+		/// <param name="accelerations">массив изменения ускорения автомобиля с адаптивным круиз-контролем на протяжении всей работы алгоритма</param>
+		public SolutionResult(List<double> ownspeeds, List<double> entryspeeds, List<double> distances, List<double> accelerations)
 		{
-			OwnSpeeds = a;
-			EntrySpeeds = b;
-			Distances = c;
-			Accelerations = d;
+			OwnSpeeds = ownspeeds;
+			EntrySpeeds = entryspeeds;
+			Distances = distances;
+			Accelerations = accelerations;
 		}
 	}
-
 }

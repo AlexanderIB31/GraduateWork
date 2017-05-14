@@ -28,7 +28,7 @@ namespace Diplom1
 		Acceleration,
 		[StringValue("Smooth")]
 		Smooth,
-		[StringValue("Breaking")]
+		[StringValue("Braking")]
 		Braking
 	}
 
@@ -40,15 +40,28 @@ namespace Diplom1
 		Distance
 	}
 
+	/// <summary>
+	/// Класс для рисования графиков
+	/// </summary>
 	internal static class Drawing
 	{
 		private static PlotSurface2D _npSurface = new PlotSurface2D(700, 500);
 
-		public static Font TitleFont { get; set; } = new Font("Arial", 12);
-		public static Font AxisFont { get; set; } = new Font("Arial", 10);
-		public static Font TickFont { get; set; } = new Font("Arial", 8);
-		public static string Path { get; set; } = @"./Plots";
-
+		internal static Font TitleFont { get; set; } = new Font("Arial", 12);
+		internal static Font AxisFont { get; set; } = new Font("Arial", 10);
+		internal static Font TickFont { get; set; } = new Font("Arial", 8);
+		/// <summary>
+		/// Директория, в которой будут сохраняться графики
+		/// </summary>
+		internal static string Path { get; set; } = @"./Plots";
+		/// <summary>
+		/// Функция рисования графиков
+		/// </summary>
+		/// <param name="time">массив моментов времени (ось X)</param>
+		/// <param name="valEntry">массив значений функции № 1 (ось Y)</param>
+		/// <param name="valAlgo">массив значений функции № 2 (ось Y)</param>
+		/// <param name="ta">Тип поведения впереди идущего автомобиля</param>
+		/// <param name="tm">Тип измерения, которое отображает график функции</param>
 		internal static void ToDraw(int[] time, double[] valEntry, double[] valAlgo, TypeAction ta, TypeMeasure tm)
 		{
 			_npSurface.Clear();

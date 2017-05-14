@@ -4,6 +4,9 @@ using System.Globalization;
 
 namespace Diplom1
 {
+	/// <summary>
+	/// Основная программа, откуда происходит запуск работы алгоритма
+	/// </summary>
 	public class Program
 	{
 		private static void WriteLineToConsole(ConsoleColor color, string body)
@@ -12,10 +15,36 @@ namespace Diplom1
 			Console.WriteLine(body);
 			Console.ResetColor();
 		}
-
+		/// <summary>
+		/// Точка входа в программу
+		/// </summary>
+		/// <param name="args">
+		/// [0] --- индекс типа поведения (1 - ускорение, 2 - переменное движение, 3 - торможение)
+		/// [1] --- путь к файлу с параметрами настройки границ нечетких множеств [необязательный]
+		/// </param>
 		public static void Main(string[] args)
 		{
-			var typeAction = TypeAction.Acceleration;
+			if (args.Length == 0)
+			{
+				throw new IndexOutOfRangeException("Не верное количество аргументов.");
+			}
+
+			TypeAction typeAction;
+
+			switch (args[0])
+			{
+				case "1":
+					typeAction = TypeAction.Acceleration;
+					break;
+				case "2":
+					typeAction = TypeAction.Smooth;
+					break;
+				case "3":
+					typeAction = TypeAction.Braking;
+					break;
+				default:
+					throw new Exception("Некорректное значение 2-го аргумента (типа поведения впереди идущего автомобиля).\n1 - ускорение\n2 - попеременное ускорение и торможение\n3 - торможение");
+			}
 
 			WriteLineToConsole(ConsoleColor.White, "Укажите время работы алгоритма (мс):");
 			var ms = int.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
@@ -51,18 +80,13 @@ namespace Diplom1
 			entrySpeed = Solution.ConvertSpeedFromKilometersToMeters(entrySpeed);
 
 			List<double> parameters;
-			var path = @"./params.txt";
+			var path = args.Length < 2 ? @"./params.txt" : args[1];
 			// Считываем параметры для Solution из файла params.txt
 			using (var fr = new System.IO.StreamReader($"{path}"))
 			{
 				parameters = new List<double>(Array.ConvertAll(fr.ReadToEnd().Trim('|').Split('|'), double.Parse));
 			}
 
-			// dS --- расстояние между автомобилями; 
-			// dV --- разница скоростей;
-			// Первые 7 параметров - особые точки для dS (в метрах);
-			// Вторые 7 параметров - особые точки для dV (в м/c);
-			// Оставшиеся 5 параметров - особые точки для V*
 			Solution.SetParams(parameters.ToArray(), criticalDist, curDist, mySpeed, entrySpeed, cruiseControlSpeed);
 			var res = Solution.ToSolve(ms, typeAction);
 
