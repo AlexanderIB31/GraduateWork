@@ -414,12 +414,20 @@ namespace Diplom1
 			}
 			return val;
 		}
-
+		/// <summary>
+		/// Преобразование скорости из км/ч в м/с
+		/// </summary>
+		/// <param name="from">Скорость в км/ч</param>
+		/// <returns></returns>
 		public static double ConvertSpeedFromKilometersToMeters(double from)
 		{
 			return from * 1000 / 3600;
 		}
-
+		/// <summary>
+		/// Преобразование скорости из м/с в км/ч
+		/// </summary>
+		/// <param name="from">Скорость в м/с</param>
+		/// <returns></returns>
 		public static double ConvertSpeedFromMetersToKilometers(double from)
 		{
 			return from * 3600 / 1000;
