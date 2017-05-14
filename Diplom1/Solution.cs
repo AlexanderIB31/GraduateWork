@@ -26,8 +26,6 @@ namespace Diplom1
 		private static double _y1;
 		private static double _y2;
 		private static double _y3;
-		private static double _y4;
-		private static double _y5;
 		#endregion
 
 		// Минимальное расстояние до цели
@@ -36,19 +34,19 @@ namespace Diplom1
 		private static double _mySpeed = 0;
 		// Цель движется неравномерно
 		private static double _entrySpeed = 16.7;
-		// Требуемая дистанция в (м)
-		private static double _perfectDistance = 30;
+		// Скорость которую выставляем круиз-контролю (которую требуется поддерживать)
+		private static double _cruiseControlSpeed = 16.7;
+		// Минимальная безопасная дистанция до впереди идущей машины в (м)
+		private static double _criticalDistance = 30;
 		// Текущая дистанция в (м)
 		private static double _currentDistance = 300;
 		// Частота вычислений: 1 (сек)
-		private static double _tau = 1;
-		// Коэф. при вычислении ускорения
-		private static double _lambda = 0.98;
+		private readonly static double _tau = 1;
 
 		// Таблица правил вывода
 		private static Dictionary<string, double> _rules = new Dictionary<string, double>();
 
-		public static void SetParams(double[] args, double perfectDist, double curDist, double mySpeed, double entrySpeed)
+		public static void SetParams(double[] args, double criticalDist, double curDist, double mySpeed, double entrySpeed, double cruiseControlSpeed)
 		{
 			try
 			{
@@ -71,19 +69,17 @@ namespace Diplom1
 				_y1 = args[14];
 				_y2 = args[15];
 				_y3 = args[16];
-				_y4 = args[17];
-				_y5 = args[18];
 
-				_perfectDistance = perfectDist;
+				_criticalDistance = criticalDist;
 				_currentDistance = curDist;
 				_mySpeed = mySpeed;
 				_entrySpeed = entrySpeed;
-				_lambda = args[19];
+				_cruiseControlSpeed = cruiseControlSpeed;
 			}
 			catch (ArgumentOutOfRangeException ex)
 			{
 				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine("Ошибка: проверьте кол-во передаваемых в args параметров, их должно быть 20!");
+				Console.WriteLine("Ошибка: проверьте кол-во передаваемых в args параметров, их должно быть 17!");
 				Console.ResetColor();
 				throw ex;
 			}
@@ -181,16 +177,16 @@ namespace Diplom1
 
 			for (int i = 0; i < time; ++i)
 			{
-				_entrySpeed = CalcEntrySpeed(ta);
+				_entrySpeed = CalcEntrySpeed(ta, i);
 
-				entrySpeeds.Add(_entrySpeed * 3600 / 1000);
+				entrySpeeds.Add(ConvertSpeedFromMetersToKilometers(_entrySpeed));
 				Time.Add(i);
 
 				var accel = ToSolveNow();
 				_mySpeed = Math.Max(_mySpeed + _tau * accel, 0);
-				Console.ForegroundColor = ConsoleColor.Cyan;
-				Console.WriteLine($"Speed: {_mySpeed}");
-				Console.ResetColor();
+				//Console.ForegroundColor = ConsoleColor.Cyan;
+				//Console.WriteLine($"Speed: {_mySpeed}");
+				//Console.ResetColor();
 				if (_currentDistance - _tau * (_mySpeed - _entrySpeed) <= _eps)
 				{
 					_mySpeed = 0;
@@ -198,7 +194,7 @@ namespace Diplom1
 
 				_currentDistance -= _tau * (_mySpeed - _entrySpeed);
 
-				ownSpeeds.Add(_mySpeed * 3600 / 1000);
+				ownSpeeds.Add(ConvertSpeedFromMetersToKilometers(_mySpeed));
 				distances.Add(_currentDistance);
 				accelerations.Add(accel);
 			}
@@ -214,8 +210,8 @@ namespace Diplom1
 
 		private static double MamdaniSchema()
 		{
-			var deltaDistance = _perfectDistance != 0 ? (_currentDistance - _perfectDistance) / _perfectDistance : 0;
-			var deltaSpeed = _entrySpeed != 0 ? (_mySpeed - _entrySpeed) / _entrySpeed : 0;
+			var deltaDistance = _criticalDistance != 0 ? (_currentDistance - _criticalDistance) / _criticalDistance : 0;
+			var deltaSpeed = _cruiseControlSpeed != 0 ? (_mySpeed - _cruiseControlSpeed) / _cruiseControlSpeed : 0;
 
 			#region Fuzzification
 			// Три области фазиффикации: близко (прямоуг трапеция), средне (треугольник), далеко (прямоуг. трапеция)
@@ -246,15 +242,15 @@ namespace Diplom1
 			#endregion
 			#region Defuzzification
 			// Дефазиффикация осуществляется методом Среднего Центра (центроидный метод)
-			var resAccel = (_y3 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
-						   + _y2 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+			var resAccel = (_y1 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+						   + _y1 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
 						   + _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
-							+ _y4 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
-							+ _y3 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
-							+ _y2 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
-							+ _y5 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
-							+ _y4 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
-							+ _y3 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"]))
+							+ _y2 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
+							+ _y2 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
+							+ _y1 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
+							+ _y3 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
+							+ _y2 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
+							+ _y1 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"]))
 					   / (Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
 						   + Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
 						   + Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
@@ -265,9 +261,9 @@ namespace Diplom1
 						   + Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
 						   + Math.Min(_rules["FarDist"], _rules["MoreSpeed"]));
 			#endregion
-			Console.ForegroundColor = ConsoleColor.Magenta;
-			Console.WriteLine($"Accel: {resAccel}");
-			Console.ResetColor();
+			//Console.ForegroundColor = ConsoleColor.Magenta;
+			//Console.WriteLine($"Accel: {resAccel}");
+			//Console.ResetColor();
 			return resAccel;
 		}
 
@@ -276,22 +272,34 @@ namespace Diplom1
 			return 0;
 		}
 	
-		private static double CalcEntrySpeed(TypeAction ta)
+		private static double CalcEntrySpeed(TypeAction ta, int curTime)
 		{
 			double val = _entrySpeed;
+			double tmp = Math.Sin(Math.PI / ((curTime % 20) + 1));
+			double g = ((curTime / 20) & 1) == 1 ?  tmp * 3 : -tmp * 3;
 			switch (ta)
 			{
 				case TypeAction.Acceleration:
-					val = Math.Min(val + 5, 50);
+					val = Math.Min(val + 3, 50);
 					break;
 				case TypeAction.Braking:
-					val = Math.Max(val - 7, 0);
+					val = Math.Max(val - 5, 0);
 					break;
 				case TypeAction.Smooth:
-					val = Math.Max(Math.Min(Math.Sin(val) * 3 + val, 50), 0);
+					val = Math.Max(Math.Min(g + val, 50), 0);
 					break;
 			}
 			return val;
+		}
+
+		public static double ConvertSpeedFromKilometersToMeters(double from)
+		{
+			return from * 1000 / 3600;
+		}
+
+		public static double ConvertSpeedFromMetersToKilometers(double from)
+		{
+			return from * 3600 / 1000;
 		}
 	}
 

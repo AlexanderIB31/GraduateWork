@@ -28,7 +28,7 @@ namespace Diplom1
 		Acceleration,
 		[StringValue("Smooth")]
 		Smooth,
-		[StringValue("Braking")]
+		[StringValue("Breaking")]
 		Braking
 	}
 
@@ -76,21 +76,20 @@ namespace Diplom1
 				NPlot.LinePlot plotAlgo = new NPlot.LinePlot();
 				NPlot.LinePlot plotEntry = new NPlot.LinePlot();
 
-				plotAlgo.AbscissaData = time;
-				plotAlgo.DataSource = valAlgo;
-				plotAlgo.Label = "Algorithm";
-				plotAlgo.Color = Color.Blue;
-
-				_npSurface.Add(plotAlgo, NPlot.PlotSurface2D.XAxisPosition.Bottom,
-							  NPlot.PlotSurface2D.YAxisPosition.Left);
-
-
 				plotEntry.AbscissaData = time;
 				plotEntry.DataSource = valEntry;
 				plotEntry.Label = "Entry";
 				plotEntry.Color = Color.Red;
 
 				_npSurface.Add(plotEntry, NPlot.PlotSurface2D.XAxisPosition.Bottom,
+								NPlot.PlotSurface2D.YAxisPosition.Left);
+
+				plotAlgo.AbscissaData = time;
+				plotAlgo.DataSource = valAlgo;
+				plotAlgo.Label = "Algorithm";
+				plotAlgo.Color = Color.Blue;
+
+				_npSurface.Add(plotAlgo, NPlot.PlotSurface2D.XAxisPosition.Bottom,
 							  NPlot.PlotSurface2D.YAxisPosition.Left);
 			}
 
