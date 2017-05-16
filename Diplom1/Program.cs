@@ -9,7 +9,7 @@ namespace Diplom1
 	/// </summary>
 	public class Program
 	{
-		private static void WriteLineToConsole(ConsoleColor color, string body)
+		public static void WriteLineToConsole(ConsoleColor color, string body)
 		{
 			Console.ForegroundColor = color;
 			Console.WriteLine(body);
@@ -22,9 +22,13 @@ namespace Diplom1
 		/// [0] --- индекс типа поведения (1 - ускорение, 2 - переменное движение, 3 - торможение)
 		/// [1] --- путь к файлу с параметрами настройки границ нечетких множеств [необязательный]
 		/// </param>
+		/// <example>
+		/// Diplom1.exe 1 < acceleration.test 
+		/// Diplom1.exe 1 params.config < acceleration.test
+		/// </example>
 		public static void Main(string[] args)
 		{
-			if (args.Length == 0)
+			if (args.Length == 0 || args.Length > 2)
 			{
 				throw new IndexOutOfRangeException("Не верное количество аргументов.");
 			}
@@ -80,7 +84,7 @@ namespace Diplom1
 			entrySpeed = Solution.ConvertSpeedFromKilometersToMeters(entrySpeed);
 
 			List<double> parameters;
-			var path = args.Length < 2 ? @"./params.txt" : args[1];
+			var path = args.Length < 2 ? @"./params.config" : args[1];
 			// Считываем параметры для Solution из файла params.txt
 			using (var fr = new System.IO.StreamReader($"{path}"))
 			{
