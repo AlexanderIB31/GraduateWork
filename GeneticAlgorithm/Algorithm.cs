@@ -29,8 +29,8 @@ namespace GA
 			{
 				throw new IndexOutOfRangeException("Не верное количество аргументов.");
 			}
-			Program.WriteLineToConsole(ConsoleColor.Magenta, 
-@"1 --- тип действия (1 - ускорение, 2 - попеременное ускорение/торможение, 3 - торможение)
+			Program.WriteLineToConsole(ConsoleColor.Magenta,
+@"1 --- тип действия (1 - ускорение, (1 - ускорение, 2 - переменное движение (резкое), 3 - переменное движение (плавное), 4 - торможение)
 2 --- время работы алгоритма
 3 --- путь к файлу со стационарными конфигурациями [необязательный параметр]");
 			try
@@ -44,6 +44,9 @@ namespace GA
 						_ta = TypeAction.Smooth;
 						break;
 					case "3":
+						_ta = TypeAction.LittleSmooth;
+						break;
+					case "4":
 						_ta = TypeAction.Braking;
 						break;
 					default:
@@ -152,74 +155,74 @@ namespace GA
 							break;
 					}
 				}
-				else if (_params.Count == 30) // Схема 5-5-5
+				else if (_params.Count == 31) // Схема 5-5-5
 				{
 					switch (geneIndex)
 					{
 						case 0:
 						case 13:
-							_paramsGA[geneIndex] = RandomizationProvider.Current.GetDouble(_params[geneIndex] - 0.1, _params[geneIndex] + 0.1);
+							_paramsGA.Add(RandomizationProvider.Current.GetDouble(_params[geneIndex] - 0.1, _params[geneIndex] + 0.1));
 							break;
 						case 1:
 						case 14:
-							_paramsGA[geneIndex] = RandomizationProvider.Current.GetDouble(_params[geneIndex] - 0.1, _params[geneIndex] + 0.1 - _eps);
+							_paramsGA.Add(RandomizationProvider.Current.GetDouble(_params[geneIndex] - 0.1, _params[geneIndex] + 0.1 - _eps));
 							break;
 						case 2:
 						case 15:
-							_paramsGA[geneIndex] = RandomizationProvider.Current.GetDouble(_params[geneIndex] - 0.1 + _eps, _params[geneIndex] + 0.1 - _eps);
+							_paramsGA.Add(RandomizationProvider.Current.GetDouble(_params[geneIndex] - 0.1 + _eps, _params[geneIndex] + 0.1 - _eps));
 							break;
 						case 3:
 						case 16:
-							_paramsGA[geneIndex] = RandomizationProvider.Current.GetDouble(_params[geneIndex] - 0.1 + _eps, _params[geneIndex] + 0.1 - _eps);
+							_paramsGA.Add(RandomizationProvider.Current.GetDouble(_params[geneIndex] - 0.1 + _eps, _params[geneIndex] + 0.1 - _eps));
 							break;
 						case 4:
 						case 17:
-							_paramsGA[geneIndex] = RandomizationProvider.Current.GetDouble(_params[geneIndex] - 0.1 + _eps, _params[geneIndex] + 0.1 - _eps);
+							_paramsGA.Add(RandomizationProvider.Current.GetDouble(_params[geneIndex] - 0.1 + _eps, _params[geneIndex] + 0.1 - _eps));
 							break;
 						case 5:
 						case 18:
-							_paramsGA[geneIndex] = 2 * _paramsGA[geneIndex - 2] - _paramsGA[geneIndex - 4];
+							_paramsGA.Add(2 * _paramsGA[geneIndex - 2] - _paramsGA[geneIndex - 4]);
 							break;
 						case 6:
 						case 19:
 						case 28:
-							_paramsGA[geneIndex] = 0;
+							_paramsGA.Add(0);
 							break;
 						case 7:
 						case 20:
-							_paramsGA[geneIndex] = -_paramsGA[geneIndex - 2];
+							_paramsGA.Add(-_paramsGA[geneIndex - 2]);
 							break;
 						case 8:
 						case 21:
-							_paramsGA[geneIndex] = -_paramsGA[geneIndex - 4];
+							_paramsGA.Add(-_paramsGA[geneIndex - 4]);
 							break;
 						case 9:
 						case 22:
-							_paramsGA[geneIndex] = -_paramsGA[geneIndex - 6];
+							_paramsGA.Add(-_paramsGA[geneIndex - 6]);
 							break;
 						case 10:
 						case 23:
-							_paramsGA[geneIndex] = -_paramsGA[geneIndex - 8];
+							_paramsGA.Add(-_paramsGA[geneIndex - 8]);
 							break;
 						case 11:
 						case 24:
-							_paramsGA[geneIndex] = -_paramsGA[geneIndex - 10];
+							_paramsGA.Add(-_paramsGA[geneIndex - 10]);
 							break;
 						case 12:
 						case 25:
-							_paramsGA[geneIndex] = -_paramsGA[geneIndex - 12];
+							_paramsGA.Add(-_paramsGA[geneIndex - 12]);
 							break;
 						case 26:
-							_paramsGA[geneIndex] = RandomizationProvider.Current.GetDouble(-9.0, -6.0);
+							_paramsGA.Add(RandomizationProvider.Current.GetDouble(-9.0, -6.0));
 							break;
 						case 27:
-							_paramsGA[geneIndex] = RandomizationProvider.Current.GetDouble(-5.0, -2.0);
+							_paramsGA.Add(RandomizationProvider.Current.GetDouble(-5.0, -2.0));
 							break;
 						case 29:
-							_paramsGA[geneIndex] = RandomizationProvider.Current.GetDouble(1.0, 4.0);
+							_paramsGA.Add(RandomizationProvider.Current.GetDouble(1.0, 4.0));
 							break;
 						case 30:
-							_paramsGA[geneIndex] = RandomizationProvider.Current.GetDouble(5.0, 7.5);
+							_paramsGA.Add(RandomizationProvider.Current.GetDouble(5.0, 7.5));
 							break;
 					}
 				}
@@ -252,6 +255,49 @@ namespace GA
 					param.Add((double)t.Value);
 				}
 
+				#region Проверка на корректность границ нечетких множеств
+				if (param.Count == 17)
+				{
+					for (int i = 0; i < 6; ++i)
+					{
+						if (param[i] > param[i + 1])
+							return -_penaltyAccident * 100;
+					}
+
+					for (int i = 7; i < 13; ++i)
+					{
+						if (param[i] > param[i + 1])
+							return -_penaltyAccident * 100;
+					}
+
+					for (int i = 14; i < 16; ++i)
+					{
+						if (param[i] > param[i + 1])
+							return -_penaltyAccident * 100;
+					}
+				}
+				else
+				{
+					for (int i = 0; i < 12; ++i)
+					{
+						if (param[i] > param[i + 1])
+							return -_penaltyAccident * 100;
+					}
+
+					for (int i = 13; i < 25; ++i)
+					{
+						if (param[i] > param[i + 1])
+							return -_penaltyAccident * 100;
+					}
+
+					for (int i = 26; i < 30; ++i)
+					{
+						if (param[i] > param[i + 1])
+							return -_penaltyAccident * 100;
+					}
+				}
+				#endregion
+
 				List<int> time = new List<int>();
 				for (int i = 0; i < _ms; ++i)
 				{
@@ -268,6 +314,7 @@ namespace GA
 				var res = Solution.ToSolve(_ms, _ta);
 
 				double eval = 0, x;
+
 				for (int i = 0; i < _ms; i++)
 				{
 					x = criticalDist - res.Distances[i];

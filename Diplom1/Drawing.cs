@@ -28,6 +28,8 @@ namespace Diplom1
 		Acceleration,
 		[StringValue("Smooth")]
 		Smooth,
+		[StringValue("LittleSmooth")]
+		LittleSmooth,
 		[StringValue("Braking")]
 		Braking
 	}
