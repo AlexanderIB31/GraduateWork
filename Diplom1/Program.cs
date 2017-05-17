@@ -19,7 +19,7 @@ namespace Diplom1
 		/// Точка входа в программу
 		/// </summary>
 		/// <param name="args">
-		/// [0] --- индекс типа поведения (1 - ускорение, 2 - переменное движение, 3 - торможение)
+		/// [0] --- индекс типа поведения (1 - ускорение, 2 - переменное движение (резкое), 3 - переменное движение (плавное), 4 - торможение)
 		/// [1] --- путь к файлу с параметрами настройки границ нечетких множеств [необязательный]
 		/// </param>
 		/// <example>
@@ -44,6 +44,9 @@ namespace Diplom1
 					typeAction = TypeAction.Smooth;
 					break;
 				case "3":
+					typeAction = TypeAction.LittleSmooth;
+					break;
+				case "4":
 					typeAction = TypeAction.Braking;
 					break;
 				default:

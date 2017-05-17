@@ -117,7 +117,7 @@ namespace Diplom1
 			catch (IndexOutOfRangeException ex)
 			{				
 				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine("Ошибка: проверьте кол-во передаваемых в args параметров, их должно быть 17!");
+				Console.WriteLine("Ошибка: проверьте кол-во передаваемых в args параметров, их должно быть 31!");
 				Console.ResetColor();
 				throw ex;
 			}
@@ -399,9 +399,7 @@ namespace Diplom1
 
 		private static double CalcEntrySpeed(TypeAction ta, int curTime)
 		{
-			double val = _entrySpeed;
-			double tmp = Math.Sin(Math.PI / ((curTime % 20) + 1));
-			double g = ((curTime / 20) & 1) == 1 ?  tmp * 3 : -tmp * 3;
+			double val = _entrySpeed, tmp;
 			switch (ta)
 			{
 				case TypeAction.Acceleration:
@@ -411,7 +409,14 @@ namespace Diplom1
 					val = Math.Max(val - 5, 0);
 					break;
 				case TypeAction.Smooth:
-					val = Math.Max(Math.Min(g + val, 50), 0);
+					tmp = Math.Sin(Math.PI / ((curTime % 20) + 1));
+					tmp = ((curTime / 20) & 1) == 1 ? tmp * 3 : -tmp * 3;
+					val = Math.Max(Math.Min(tmp + val, 50), 0);
+					break;
+				case TypeAction.LittleSmooth:
+					tmp = Math.Sin(Math.PI / ((curTime % 20) + 1));
+					tmp = ((curTime / 20) & 1) == 1 ? tmp * 3 : -tmp * 3;
+					val = Math.Max(Math.Min(tmp + val, 20), 10);
 					break;
 			}
 			return val;
