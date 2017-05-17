@@ -40,6 +40,8 @@ namespace Diplom1
 		private static double _y1;
 		private static double _y2;
 		private static double _y3;
+		private static double _y4;
+		private static double _y5;
 		#endregion
 
 		// Минимальное расстояние до цели
@@ -413,24 +415,6 @@ namespace Diplom1
 					break;
 			}
 			return val;
-		}
-		/// <summary>
-		/// Преобразование скорости из км/ч в м/с
-		/// </summary>
-		/// <param name="from">Скорость в км/ч</param>
-		/// <returns></returns>
-		public static double ConvertSpeedFromKilometersToMeters(double from)
-		{
-			return from * 1000 / 3600;
-		}
-		/// <summary>
-		/// Преобразование скорости из м/с в км/ч
-		/// </summary>
-		/// <param name="from">Скорость в м/с</param>
-		/// <returns></returns>
-		public static double ConvertSpeedFromMetersToKilometers(double from)
-		{
-			return from * 3600 / 1000;
 		}
 		/// <summary>
 		/// Преобразование скорости из км/ч в м/с
