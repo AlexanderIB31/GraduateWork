@@ -75,7 +75,7 @@ namespace GA
 			var mutation = new UniformMutation();
 			var fitness = new MyProblemFitness();
 			var chromosome = new MyProblemChromosome();
-			var population = new Population(50, 100, chromosome);
+			var population = new Population(50, 70, chromosome);
 
 			var ga = new GeneticAlgorithm(population, fitness, selection, crossover, mutation);
 			ga.Termination = new GenerationNumberTermination(100);
@@ -304,27 +304,26 @@ namespace GA
 					time.Add(i);
 				}
 
-				double criticalDist = 30;
+				double perfectDist = 30;
 				double curDist = 300;
-				double mySpeed = 0;
+				double mySpeed = 20;
 				double entrySpeed = 16.7;
-				double cruiseControlSpeed = 16.7;
 
-				Solution.SetParams(param.ToArray(), criticalDist, curDist, mySpeed, entrySpeed, cruiseControlSpeed);
+				Solution.SetParams(param.ToArray(), perfectDist, curDist, mySpeed, entrySpeed);
 				var res = Solution.ToSolve(_ms, _ta);
 
 				double eval = 0, x;
 
 				for (int i = 0; i < _ms; i++)
 				{
-					x = criticalDist - res.Distances[i];
-					if (x <= 0)
+					x = perfectDist - res.Distances[i];
+					if (res.Distances[i] > 0)
 					{
-						eval += x * x;
+						eval += 1 / (x * x + 1);
 					}
 					else
 					{
-						eval -= res.Distances[i] > 0 && x > 0 ? x * x / 3 : _penaltyAccident;
+						eval -= _penaltyAccident;
 					}
 				}
 
