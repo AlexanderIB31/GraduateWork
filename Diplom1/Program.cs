@@ -62,22 +62,17 @@ namespace Diplom1
 				time.Add(i);
 			}
 
-			double criticalDist = 30;
+			double perfectDist = 30;
 			double curDist = 300;
 			double mySpeed = 0;
 			double entrySpeed = 16.7;
-			double cruiseControlSpeed = 16.7;
-
-			WriteLineToConsole(ConsoleColor.White, "Введите скорость, которую требуется поддерживать автомобилем (в км/ч):");
-			cruiseControlSpeed = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-			cruiseControlSpeed = Solution.ConvertSpeedFromKilometersToMeters(cruiseControlSpeed);
 
 			WriteLineToConsole(ConsoleColor.White, "Введите скорость Вашего автомобиля (в км/ч):");
 			mySpeed = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
 			mySpeed = Solution.ConvertSpeedFromKilometersToMeters(mySpeed);
 
-			WriteLineToConsole(ConsoleColor.White, "Введите минимальную дистанцию до впереди идущего автомобиля (в метрах):");
-			criticalDist = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+			WriteLineToConsole(ConsoleColor.White, "Введите дистанцию, которую необходимо соблюдать до впереди идущего автомобиля (в метрах):");
+			perfectDist = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
 
 			WriteLineToConsole(ConsoleColor.White, "Введите расстояние до впереди идущего автомобиля (в метрах):");
 			curDist = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
@@ -94,7 +89,7 @@ namespace Diplom1
 				parameters = new List<double>(Array.ConvertAll(fr.ReadToEnd().Trim('|').Split('|'), double.Parse));
 			}
 
-			Solution.SetParams(parameters.ToArray(), criticalDist, curDist, mySpeed, entrySpeed, cruiseControlSpeed);
+			Solution.SetParams(parameters.ToArray(), perfectDist, curDist, mySpeed, entrySpeed);
 			var res = Solution.ToSolve(ms, typeAction);
 
 			Drawing.ToDraw(time.ToArray(), res.EntrySpeeds.ToArray(), res.OwnSpeeds.ToArray(), typeAction, TypeMeasure.Speed);

@@ -53,7 +53,7 @@ namespace Diplom1
 		// Скорость которую выставляем круиз-контролю (которую требуется поддерживать)
 		private static double _cruiseControlSpeed = 16.7;
 		// Минимальная безопасная дистанция до впереди идущей машины в (м)
-		private static double _criticalDistance = 30;
+		private static double _perfectDistance = 30;
 		// Текущая дистанция в (м)
 		private static double _currentDistance = 300;
 		// Частота вычислений: 1 (сек)
@@ -65,12 +65,11 @@ namespace Diplom1
 		/// Задание параметров (границ нечетких множеств, скоростей и дистанции); Инициализация
 		/// </summary>
 		/// <param name="args">Границы нечетких множеств (для дистанции (входные данные), для скорости (входные данные), для ускорения (выходная переменная))</param>
-		/// <param name="criticalDist">Минимальное расстояние до впереди идущего автомобиля</param>
+		/// <param name="perfectDist">Расстояние, которое необходимо держать до впереди идущего автомобиля</param>
 		/// <param name="curDist">Начальное расстояние до впереди идущего автомобиля</param>
 		/// <param name="mySpeed">Начальная скорость автомобиля с адаптивным круиз-контролем</param>
 		/// <param name="entrySpeed">Начальная скорость впереди идущего автомобиля</param>
-		/// <param name="cruiseControlSpeed">Скорость, которую должен поддерживать адаптивный круиз-контроль</param>
-		public static void SetParams(double[] args, double criticalDist, double curDist, double mySpeed, double entrySpeed, double cruiseControlSpeed)
+		public static void SetParams(double[] args, double perfectDist, double curDist, double mySpeed, double entrySpeed)
 		{
 			try
 			{
@@ -108,11 +107,10 @@ namespace Diplom1
 				_y4 = args[29];
 				_y5 = args[30];
 
-				_criticalDistance = criticalDist;
+				_perfectDistance = perfectDist;
 				_currentDistance = curDist;
 				_mySpeed = mySpeed;
 				_entrySpeed = entrySpeed;
-				_cruiseControlSpeed = cruiseControlSpeed;
 			}
 			catch (IndexOutOfRangeException ex)
 			{				
@@ -279,8 +277,8 @@ namespace Diplom1
 				entrySpeeds.Add(ConvertSpeedFromMetersToKilometers(_entrySpeed));
 				Time.Add(i);
 
-				var accel = ToSolveNow(_currentDistance, _criticalDistance, _mySpeed, _cruiseControlSpeed);
-				_mySpeed = Math.Max(_mySpeed + _tau * accel, 0);
+				var accel = ToSolveNow(_currentDistance, _perfectDistance, _mySpeed, _entrySpeed);
+				_mySpeed = Math.Min(Math.Max(_mySpeed + _tau * accel, 0), 70);
 
 				if (_currentDistance - _tau * (_mySpeed - _entrySpeed) <= _eps)
 				{
@@ -301,10 +299,10 @@ namespace Diplom1
 		/// Решение в конкретный момент времени
 		/// </summary>
 		/// <returns>Возвращает ускорение, с которым должен двигаться в данный момент автомобиль с адаптивным круиз-контролем</returns>
-		public static double ToSolveNow(double curDistance, double critDistance, double mySpeed, double cruiseCntrlSpeed)
+		public static double ToSolveNow(double curDistance, double critDistance, double mySpeed, double entrySpeed)
 		{
 			var deltaDistance = critDistance != 0 ? (curDistance - critDistance) / critDistance : 0;
-			var deltaSpeed = cruiseCntrlSpeed != 0 ? (mySpeed - cruiseCntrlSpeed) / cruiseCntrlSpeed : 0;
+			var deltaSpeed = entrySpeed != 0 ? (mySpeed - entrySpeed) / entrySpeed : 0;
 
 			#region Fuzzification
 			// Пять областей фазиффикации: очень близко (прямоуг трапеция), близко (треугольник), отлично (треугольник), далеко (треугольник), очень далеко (прямоуг. трапеция)
@@ -334,35 +332,35 @@ namespace Diplom1
 			#endregion
 			#region Defuzzification
 			// Дефазиффикация осуществляется методом Среднего Центра (центроидный метод)
-			var resAccel = (_y1 * Math.Min(_rules["VeryCloseDist"], _rules["VeryLessSpeed"])
-						   + _y1 * Math.Min(_rules["VeryCloseDist"], _rules["LessSpeed"])
-						   + _y1 * Math.Min(_rules["VeryCloseDist"], _rules["ZeroSpeed"])
+			var resAccel = (_y3 * Math.Min(_rules["VeryCloseDist"], _rules["VeryLessSpeed"])
+						   + _y2 * Math.Min(_rules["VeryCloseDist"], _rules["LessSpeed"])
+						   + _y2 * Math.Min(_rules["VeryCloseDist"], _rules["ZeroSpeed"])
 							 + _y1 * Math.Min(_rules["VeryCloseDist"], _rules["MoreSpeed"])
 							 + _y1 * Math.Min(_rules["VeryCloseDist"], _rules["VeryMoreSpeed"])
 
-							 + _y2 * Math.Min(_rules["CloseDist"], _rules["VeryLessSpeed"])
-							 + _y2 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
-							 + _y2 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
-							 + _y1 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
+							 + _y4 * Math.Min(_rules["CloseDist"], _rules["VeryLessSpeed"])
+							 + _y3 * Math.Min(_rules["CloseDist"], _rules["LessSpeed"])
+							 + _y3 * Math.Min(_rules["CloseDist"], _rules["ZeroSpeed"])
+							 + _y2 * Math.Min(_rules["CloseDist"], _rules["MoreSpeed"])
 							 + _y1 * Math.Min(_rules["CloseDist"], _rules["VeryMoreSpeed"])
 
-							 + _y3 * Math.Min(_rules["ZeroDist"], _rules["VeryLessSpeed"])
-							 + _y3 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
+							 + _y5 * Math.Min(_rules["ZeroDist"], _rules["VeryLessSpeed"])
+							 + _y4 * Math.Min(_rules["ZeroDist"], _rules["LessSpeed"])
 							 + _y3 * Math.Min(_rules["ZeroDist"], _rules["ZeroSpeed"])
 							 + _y2 * Math.Min(_rules["ZeroDist"], _rules["MoreSpeed"])
-							 + _y1 * Math.Min(_rules["ZeroDist"], _rules["VeryMoreSpeed"])
+							 + _y2 * Math.Min(_rules["ZeroDist"], _rules["VeryMoreSpeed"])
 
 							 + _y5 * Math.Min(_rules["FarDist"], _rules["VeryLessSpeed"])
 							 + _y4 * Math.Min(_rules["FarDist"], _rules["LessSpeed"])
 							 + _y3 * Math.Min(_rules["FarDist"], _rules["ZeroSpeed"])
-							 + _y2 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"])
-							 + _y1 * Math.Min(_rules["FarDist"], _rules["VeryMoreSpeed"])
+							 + _y3 * Math.Min(_rules["FarDist"], _rules["MoreSpeed"])
+							 + _y2 * Math.Min(_rules["FarDist"], _rules["VeryMoreSpeed"])
 
 							 + _y5 * Math.Min(_rules["VeryFarDist"], _rules["VeryLessSpeed"])
-							 + _y4 * Math.Min(_rules["VeryFarDist"], _rules["LessSpeed"])
-							 + _y3 * Math.Min(_rules["VeryFarDist"], _rules["ZeroSpeed"])
-							 + _y2 * Math.Min(_rules["VeryFarDist"], _rules["MoreSpeed"])
-							 + _y2 * Math.Min(_rules["VeryFarDist"], _rules["VeryMoreSpeed"]))
+							 + _y5 * Math.Min(_rules["VeryFarDist"], _rules["LessSpeed"])
+							 + _y4 * Math.Min(_rules["VeryFarDist"], _rules["ZeroSpeed"])
+							 + _y4 * Math.Min(_rules["VeryFarDist"], _rules["MoreSpeed"])
+							 + _y3 * Math.Min(_rules["VeryFarDist"], _rules["VeryMoreSpeed"]))
 						/ (Math.Min(_rules["VeryCloseDist"], _rules["VeryLessSpeed"])
 							 + Math.Min(_rules["VeryCloseDist"], _rules["LessSpeed"])
 							 + Math.Min(_rules["VeryCloseDist"], _rules["ZeroSpeed"])
@@ -403,10 +401,10 @@ namespace Diplom1
 			switch (ta)
 			{
 				case TypeAction.Acceleration:
-					val = Math.Min(val + 3, 50);
+					val = curTime > 20 ? Math.Min(val + 6, 50) : val;
 					break;
 				case TypeAction.Braking:
-					val = Math.Max(val - 5, 0);
+					val = curTime > 20 ? Math.Max(val - 7, 0) : val;
 					break;
 				case TypeAction.Smooth:
 					tmp = Math.Sin(Math.PI / ((curTime % 20) + 1));
