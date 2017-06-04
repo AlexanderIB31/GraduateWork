@@ -44,7 +44,7 @@ namespace GA
 						_ta = TypeAction.Smooth;
 						break;
 					case "3":
-						_ta = TypeAction.LittleSmooth;
+						_ta = TypeAction.Sharp;
 						break;
 					case "4":
 						_ta = TypeAction.Braking;
@@ -304,10 +304,10 @@ namespace GA
 					time.Add(i);
 				}
 
-				double perfectDist = 30;
-				double curDist = 300;
-				double mySpeed = 20;
-				double entrySpeed = 16.7;
+				double perfectDist = 50;
+				double curDist = 50;
+				double mySpeed = 19.444;
+				double entrySpeed = 19.444;
 
 				Solution.SetParams(param.ToArray(), perfectDist, curDist, mySpeed, entrySpeed);
 				var res = Solution.ToSolve(_ms, _ta);

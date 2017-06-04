@@ -2,43 +2,37 @@
 using System.IO;
 using NPlot.Bitmap;
 using System.Drawing;
+using System.Reflection;
 
 namespace Diplom1
 {
 	public class StringValueAttribute : Attribute
 	{
-		private string _value;
+		public string StringValue { get; protected set; }
 
 		public StringValueAttribute(string value)
 		{
-			_value = value;
-		}
-
-		public string Value {
-			get
-			{
-				return _value;
-			}
+			this.StringValue = value;
 		}
 	}
 
 	public enum TypeAction
 	{
-		[StringValue("Acceleration")]
+		[StringValue("Ускорение")]
 		Acceleration,
-		[StringValue("Smooth")]
+		[StringValue("Плавное маневрирование")]
 		Smooth,
-		[StringValue("LittleSmooth")]
-		LittleSmooth,
-		[StringValue("Braking")]
+		[StringValue("Резкое маневрирование")]
+		Sharp,
+		[StringValue("Торможение")]
 		Braking
 	}
 
 	public enum TypeMeasure
 	{
-		[StringValue("Speed")]
+		[StringValue("Скорость")]
 		Speed,
-		[StringValue("Distance")]
+		[StringValue("Дистанция")]
 		Distance
 	}
 
@@ -55,7 +49,7 @@ namespace Diplom1
 		/// <summary>
 		/// Директория, в которой будут сохраняться графики
 		/// </summary>
-		internal static string Path { get; set; } = @"./Plots";
+		internal static string FolderPath { get; set; } = @"./Plots";
 		/// <summary>
 		/// Функция рисования графиков
 		/// </summary>
@@ -67,12 +61,12 @@ namespace Diplom1
 		internal static void ToDraw(int[] time, double[] valEntry, double[] valAlgo, TypeAction ta, TypeMeasure tm)
 		{
 			_npSurface.Clear();
-			_npSurface.Title = $"{tm} : {ta}";
+			_npSurface.Title = $"Поведение - {ta.GetStringValue()}, измеряемая величина - {tm.GetStringValue()}";
 			_npSurface.BackColor = Color.White;
 
 			NPlot.Grid grid = new NPlot.Grid();
 			_npSurface.Add(grid, NPlot.PlotSurface2D.XAxisPosition.Bottom,
-						  NPlot.PlotSurface2D.YAxisPosition.Left);
+							NPlot.PlotSurface2D.YAxisPosition.Left);
 
 			if (tm == TypeMeasure.Distance)
 			{
@@ -80,11 +74,11 @@ namespace Diplom1
 
 				plot.AbscissaData = time;
 				plot.DataSource = valAlgo;
-				plot.Label = "Algorithm";
+				plot.Label = "Алгоритм";
 				plot.Color = Color.Blue;
 
 				_npSurface.Add(plot, NPlot.PlotSurface2D.XAxisPosition.Bottom,
-							  NPlot.PlotSurface2D.YAxisPosition.Left);
+								NPlot.PlotSurface2D.YAxisPosition.Left);
 			}
 			else
 			{
@@ -93,7 +87,7 @@ namespace Diplom1
 
 				plotEntry.AbscissaData = time;
 				plotEntry.DataSource = valEntry;
-				plotEntry.Label = "Entry";
+				plotEntry.Label = "Цель";
 				plotEntry.Color = Color.Red;
 
 				_npSurface.Add(plotEntry, NPlot.PlotSurface2D.XAxisPosition.Bottom,
@@ -101,19 +95,19 @@ namespace Diplom1
 
 				plotAlgo.AbscissaData = time;
 				plotAlgo.DataSource = valAlgo;
-				plotAlgo.Label = "Algorithm";
+				plotAlgo.Label = "Алгоритм";
 				plotAlgo.Color = Color.Blue;
 
 				_npSurface.Add(plotAlgo, NPlot.PlotSurface2D.XAxisPosition.Bottom,
-							  NPlot.PlotSurface2D.YAxisPosition.Left);
+								NPlot.PlotSurface2D.YAxisPosition.Left);
 			}
 
-			_npSurface.XAxis1.Label = "Time";
+			_npSurface.XAxis1.Label = "Время (с)";
 			_npSurface.XAxis1.NumberFormat = "{0:##0}";
 			_npSurface.XAxis1.LabelFont = AxisFont;
 			_npSurface.XAxis1.TickTextFont = TickFont;
 
-			_npSurface.YAxis1.Label = $"{tm}";
+			_npSurface.YAxis1.Label = tm == TypeMeasure.Speed ? "Скорость (км/ч)" : "Дистанция (м)";
 			_npSurface.YAxis1.NumberFormat = "{0:##0.0}";
 			_npSurface.YAxis1.LabelFont = AxisFont;
 			_npSurface.YAxis1.TickTextFont = TickFont;
@@ -132,18 +126,34 @@ namespace Diplom1
 
 			try
 			{
-				if (!Directory.Exists(Path))
+				if (!Directory.Exists(FolderPath))
 				{
-					DirectoryInfo di = Directory.CreateDirectory(Path);
-					Console.WriteLine("The directory was created successfully at {0}.", Directory.GetCreationTime(Path));
+					DirectoryInfo di = Directory.CreateDirectory(FolderPath);
+					Console.WriteLine("The directory was created successfully at {0}.", Directory.GetCreationTime(FolderPath));
 				}
-				var files = Directory.GetFiles($"{Path}/", $"*plot-{ta}-{tm}*.png");
-				_npSurface.Bitmap.Save($"{Path}/plot-{ta}-{tm}-{files.Length}.png");
+				var files = Directory.GetFiles($"{FolderPath}/", $"*plot-{ta}-{tm}*.png");
+				_npSurface.Bitmap.Save($"{FolderPath}/plot-{ta}-{tm}-{files.Length}.png");
 			}
 			catch (Exception e)
 			{
 				Console.WriteLine("The process failed: {0}", e.ToString());
 			}
+		}
+
+		public static string GetStringValue(this Enum value)
+		{
+			// Get the type
+			Type type = value.GetType();
+
+			// Get fieldinfo for this type
+			FieldInfo fieldInfo = type.GetField(value.ToString());
+
+			// Get the stringvalue attributes
+			StringValueAttribute[] attribs = fieldInfo.GetCustomAttributes(
+					typeof(StringValueAttribute), false) as StringValueAttribute[];
+
+			// Return the first if there was a match.
+			return attribs.Length > 0 ? attribs[0].StringValue : null;
 		}
 	}
 }
