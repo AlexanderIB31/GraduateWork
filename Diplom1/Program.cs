@@ -44,7 +44,7 @@ namespace Diplom1
 					typeAction = TypeAction.Smooth;
 					break;
 				case "3":
-					typeAction = TypeAction.LittleSmooth;
+					typeAction = TypeAction.Sharp;
 					break;
 				case "4":
 					typeAction = TypeAction.Braking;
@@ -92,10 +92,17 @@ namespace Diplom1
 			Solution.SetParams(parameters.ToArray(), perfectDist, curDist, mySpeed, entrySpeed);
 			var res = Solution.ToSolve(ms, typeAction);
 
+			Drawing.FolderPath = @"./SpecialPlots4Presentation";
 			Drawing.ToDraw(time.ToArray(), res.EntrySpeeds.ToArray(), res.OwnSpeeds.ToArray(), typeAction, TypeMeasure.Speed);
 			Drawing.ToDraw(time.ToArray(), null, res.Distances.ToArray(), typeAction, TypeMeasure.Distance);
 
 			WriteLineToConsole(ConsoleColor.Green, "Вычисления выполнены. Графики построены.");
+			double error = 0;
+			foreach (var x in res.Distances)
+			{
+				error += (x - perfectDist) * (x - perfectDist);
+			}
+			WriteLineToConsole(ConsoleColor.Cyan, $"Оценка работы алгоритма = {Math.Sqrt(error / ms)}");
 		}
 	}
 }

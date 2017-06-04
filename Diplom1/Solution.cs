@@ -398,23 +398,20 @@ namespace Diplom1
 		private static double CalcEntrySpeed(TypeAction ta, int curTime)
 		{
 			double val = _entrySpeed, tmp;
+
 			switch (ta)
 			{
 				case TypeAction.Acceleration:
-					val = curTime > 20 ? Math.Min(val + 6, 50) : val;
+					val = Math.Min(val + 3, 30.5);
 					break;
 				case TypeAction.Braking:
 					val = curTime > 20 ? Math.Max(val - 7, 0) : val;
 					break;
 				case TypeAction.Smooth:
-					tmp = Math.Sin(Math.PI / ((curTime % 20) + 1));
-					tmp = ((curTime / 20) & 1) == 1 ? tmp * 3 : -tmp * 3;
-					val = Math.Max(Math.Min(tmp + val, 50), 0);
+					val += 2 * Math.Sin(2 * Math.PI / 10 * curTime);
 					break;
-				case TypeAction.LittleSmooth:
-					tmp = Math.Sin(Math.PI / ((curTime % 20) + 1));
-					tmp = ((curTime / 20) & 1) == 1 ? tmp * 3 : -tmp * 3;
-					val = Math.Max(Math.Min(tmp + val, 20), 10);
+				case TypeAction.Sharp:
+					val += 6 * Math.Sin(2 * Math.PI / 10 * curTime);
 					break;
 			}
 			return val;
